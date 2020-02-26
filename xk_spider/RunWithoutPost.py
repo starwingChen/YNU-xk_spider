@@ -38,7 +38,10 @@ headers['cookie'], headers['token'], batchCode = al.get_params()
 # 想让程序出错几率少点就把下面这行取消注释(即把最前面的#号和空格都删掉)，但就不能把打开的浏览器关掉了
 # al.keep_connect()
 
-'''至此程序已经可以运行了'''
+'''至此程序已经可以运行了。在程序运行期间请不要登录选课系统，否则程序会终止运行'''
+'''另外服务器隔一段时间后会自动注销你的登录（大概是4小时，如果你将 al.keep_connect()取消了注释则不会），此时你需要重新运行程序'''
+'''关于上个问题的解决方案我已经有大概思路了，隔两天写了再更新'''
+'''自动抢课的代码也隔两天再发，也没多少行，有兴趣的盆友可以自己实现下 :)'''
 gc = GetCourse(headers, stdCode, batchCode)
 
 ec = ThreadPoolExecutor(max_workers=6)

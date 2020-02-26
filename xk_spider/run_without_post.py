@@ -32,7 +32,7 @@ programCourse = [
     ['课程3', '老师3'], 
 ]
 '''
-al = AutoLogin(url, stdCode, pswd, path)
+al = AutoLogin(url, path, stdCode, pswd)
 headers['cookie'], headers['token'], batchCode = al.get_params()
 
 # 想让程序出错几率少点就把下面这行取消注释(即把最前面的#号和空格都删掉)，但就不能把打开的浏览器关掉了

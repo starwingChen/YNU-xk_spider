@@ -8,7 +8,7 @@ import ast
 
 
 class AutoLogin:
-    def __init__(self, url, name='', pswd='', path):
+    def __init__(self, url, path, name='', pswd=''):
         self.driver = webdriver.Chrome(executable_path=path)
         self.name = name
         self.url = url

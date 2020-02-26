@@ -30,6 +30,7 @@
 **拿这个去赚钱的崽种必会被山本宽施以天诛  
 Those bastards who take this to make money will be executed  by Yamamoto  
 これを持って金をもうける崽種は山本寛の天誅を受けるに違いない**  
+![](./resource/rysh.jpg)
 
 
 

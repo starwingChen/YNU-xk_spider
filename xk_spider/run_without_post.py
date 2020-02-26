@@ -42,6 +42,7 @@ headers['cookie'], headers['token'], batchCode = al.get_params()
 '''另外服务器隔一段时间后会自动注销你的登录（大概是4小时，如果你将 al.keep_connect()取消了注释则不会），此时你需要重新运行程序'''
 '''关于上个问题的解决方案我已经有大概思路了，隔两天写了再更新'''
 '''自动抢课的代码也隔两天再发，也没多少行，有兴趣的盆友可以自己实现下 :)'''
+'''如果本项目有帮到你，还请点击GitHub主页右上角的star支持下 :)'''
 gc = GetCourse(headers, stdCode, batchCode)
 
 ec = ThreadPoolExecutor(max_workers=6)

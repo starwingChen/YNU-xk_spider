@@ -24,7 +24,9 @@
 
 **登录过程中如果出现"认证失败"，那是服务器抽风导致的（雨我无瓜），此时刷新页面或退掉重开都行**  
 ## 成功示例：
-![](./resource/res1.png![](./resource/res2.jpg)![](./resource/res3.jpg)
+![](./resource/res1.png)
+![](./resource/res2.jpg)
+![](./resource/res3.jpg)
   
 ## 郑重声明:
 此程序仅作为技术交流之用，请不要将其用于任何形式的收费行为中，  

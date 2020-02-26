@@ -8,7 +8,7 @@ headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
                   'Chrome/80.0.3987.116 Safari/537.36'
 }
-
+path = ''  # 填写你的chromedriver路径，如 'D:/webdriver/chromedriver.exe'
 url = 'http://xk.ynu.edu.cn/xsxkapp/sys/xsxkapp/*default/index.do'
 stdCode = ''  # 在''中填入你的学号
 pswd = ''  # 填你的密码
@@ -32,7 +32,7 @@ programCourse = [
     ['课程3', '老师3'], 
 ]
 '''
-al = AutoLogin(url, stdCode, pswd)
+al = AutoLogin(url, stdCode, pswd, path)
 headers['cookie'], headers['token'], batchCode = al.get_params()
 
 # 想让程序出错几率少点就把下面这行取消注释(即把最前面的#号和空格都删掉)，但就不能把打开的浏览器关掉了

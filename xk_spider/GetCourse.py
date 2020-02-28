@@ -1,6 +1,8 @@
 import requests
 import ast
 import time
+import re
+from requests.exceptions import HTTPError
 
 
 def to_wechat(key, title, string):
@@ -20,7 +22,14 @@ class GetCourse:
         self.stdcode = stdcode
         self.batchcode = batchcode
 
-    def judge(self, course_name, teacher, key, kind='素选'):
+        # self.flag = 0
+        # self.cookies = {
+        #     '_WEU': '',
+        #     'JSESSIONID': '',
+        #     'route': ['', '', ''],
+        # }
+
+    def judge(self, course_name, teacher, key='', kind='素选'):
         # 人数未满才返回classid
         classtype = "XGXK"
         if kind == '素选':
@@ -31,50 +40,60 @@ class GetCourse:
         url = 'http://xk.ynu.edu.cn/xsxkapp/sys/xsxkapp/elective/' + kind
 
         while True:
-            # try:
-            query = self.__judge_datastruct(course_name, classtype)
-            r = requests.post(url, data=query, headers=self.headers)
-            flag = 0
-            while not r:
-                if flag > 2:
-                    to_wechat(key, f'{course_name} 查询失败，请检查失败原因', '线程结束')
-                    return False
-                print(f'[warning]: jugde()函数正尝试再次爬取')
-                time.sleep(3)
+            try:
+                query = self.__judge_datastruct(course_name, classtype)
                 r = requests.post(url, data=query, headers=self.headers)
+                r.raise_for_status()
+                flag = 0
+                while not r:
+                    if flag > 2:
+                        to_wechat(key, f'{course_name} 查询失败，请检查失败原因', '线程结束')
+                        return False
+                    print(f'[warning]: jugde()函数正尝试再次爬取')
+                    time.sleep(3)
+                    r = requests.post(url, data=query, headers=self.headers)
 
-            temp = r.text.replace('null', 'None').replace('false', 'False').replace('true', 'True')
-            res = ast.literal_eval(temp)
-            if kind == 'publicCourse.do':
-                datalist = res['dataList']
-            elif kind == 'programCourse.do':
-                datalist = res['dataList'][0]['tcList']
-            else:
-                print('kind参数错误，请重新输入')
-                return False
+                try:
+                    setcookie = r.headers['set-cookie']
+                except KeyError:
+                    setcookie = ''
+                if setcookie:
+                    print(f'[set-cookie]: {setcookie}')
+                    update = re.search(r'_WEU=.+?; ', setcookie).group(0)
+                    self.headers['cookie'] = re.sub(r'_WEU=.+?; ', update, self.headers['cookie'])
 
-            if res['msg'] == '未查询到登录信息':
+                    print(f'[current cookie]: {self.headers["cookie"]}')
+
+                temp = r.text.replace('null', 'None').replace('false', 'False').replace('true', 'True')
+                res = ast.literal_eval(temp)
+                if kind == 'publicCourse.do':
+                    datalist = res['dataList']
+                elif kind == 'programCourse.do':
+                    datalist = res['dataList'][0]['tcList']
+                else:
+                    print('kind参数错误，请重新输入')
+                    return False
+
+                if res['msg'] == '未查询到登录信息':
+                    print('登录失效，请重新登录')
+                    to_wechat(key, '登录失效，请重新登录', '线程结束')
+                    return False
+
+                for course in datalist:
+                    remain = int(course['classCapacity']) - int(course['numberOfFirstVolunteer'])
+                    if remain and course['teacherName'] == teacher:
+                        string = f'{course_name} {teacher}：{remain}人空缺'
+                        print(string)
+                        return to_wechat(key, f'{course_name} 余课提醒', string)
+                        # return course_name, teacher, classtype, course['teachingClassID']
+
+                print(f'{course_name} {teacher}：人数已满 {time.ctime()}')
+                time.sleep(15)
+
+            except HTTPError or SyntaxError:
                 print('登录失效，请重新登录')
                 to_wechat(key, '登录失效，请重新登录', '线程结束')
                 return False
-
-            for course in datalist:
-                remain = int(course['classCapacity']) - int(course['numberOfFirstVolunteer'])
-                if remain and course['teacherName'] == teacher:
-                    string = f'{course_name} {teacher}：{remain}人空缺'
-                    print(string)
-                    return to_wechat(key, f'{course_name} 余课提醒', string)
-                    # return course_name, teacher, classtype, course['teachingClassID']
-
-            print(f'{course_name} {teacher}：人数已满')  # test line
-            time.sleep(15)
-
-            # except HTTPError:
-            #     print('http请求失败')
-            #     return False
-            # except ValueError or SyntaxError:
-            #     print('登录失效')
-            #     return False
 
     def __judge_datastruct(self, course, classtype) -> dict:
         data = {
@@ -97,6 +116,28 @@ class GetCourse:
         }
 
         return query
+
+    # def update_cookie(self, string):
+    #     if '_WEU' in string:
+    #         self.cookies['_WEU'] = re.search(r'_WEU=(.+?)[,;]', string).group(1)
+    #     if 'JSESSIONID' in string:
+    #         self.cookies['JSESSIONID'] = re.search(r'JSESSIONID=(.+?)[,;]', string).group(1)
+    #     if 'route' in string:
+    #         routes = re.findall(r'route=(.+?)[,;]', string)
+    #         for route in routes:
+    #             self.cookies['route'][self.flag] = route
+    #             self.flag = (self.flag + 1) % 3
+    #
+    #     current = ''
+    #     for key, value in self.cookies.items():
+    #         if isinstance(value, list):
+    #             for s in value:
+    #                 current += key + '=' + s + '; '
+    #         else:
+    #             current += key + '=' + value + '; '
+    #
+    #     print(self.flag)
+    #     return current
 
 
 if __name__ == '__main__':

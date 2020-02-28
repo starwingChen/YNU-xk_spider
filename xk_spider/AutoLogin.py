@@ -15,7 +15,7 @@ class AutoLogin:
         self.pswd = pswd
 
     def get_params(self):
-        # get cookies and token and batchCode
+        # 获得必要参数
         self.driver.get(self.url)
         self.driver.implicitly_wait(5)
 
@@ -32,15 +32,15 @@ class AutoLogin:
                 cookies += item['name'] + '=' + item['value'] + '; '
             token = self.driver.execute_script('return sessionStorage.getItem("token");')
             batch_str = self.driver. \
-                execute_script('return sessionStorage.getItem("currentBatch");').replace('null', 'None')
+                execute_script('return sessionStorage.getItem("currentBatch");').replace('null', 'None').replace('false', 'False').replace('true', 'True')
             batch = ast.literal_eval(batch_str)
-            # self.driver.quit()
+            self.driver.quit()
 
             return cookies, token, batch['code']
 
         else:
             print('page load failed')
-            # self.driver.quit()
+            self.driver.quit()
             return False
 
     # 暂时无用

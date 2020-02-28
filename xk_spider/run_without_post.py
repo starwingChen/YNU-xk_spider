@@ -35,17 +35,15 @@ programCourse = [
 al = AutoLogin(url, path, stdCode, pswd)
 headers['cookie'], headers['token'], batchCode = al.get_params()
 
-# 想让程序出错几率少点就把下面这行取消注释(即把最前面的#号和空格都删掉)，但就不能把打开的浏览器关掉了
-# al.keep_connect()
-
 '''至此程序已经可以运行了。在程序运行期间请不要登录选课系统，否则程序会终止运行'''
-'''另外服务器隔一段时间后会自动注销你的登录（大概是4小时，如果你将 al.keep_connect()取消了注释则不会），此时你需要重新运行程序'''
-'''关于上个问题的解决方案我已经有大概思路了，隔两天写了再更新'''
+'''已破除自动注销机制，实现了7*24小时运行'''
+'''因为用了线程池，按理说会有线程同步上的问题，但在这个爬虫上几乎不会产生，如果您遇到了可以联系我，我再对代码做修改'''
+
 '''自动抢课的代码也隔两天再发，也没多少行，有兴趣的盆友可以自己实现下 :)'''
 '''如果本项目有帮到你，还请点击GitHub主页右上角的star支持下 :)'''
 gc = GetCourse(headers, stdCode, batchCode)
 
-ec = ThreadPoolExecutor(max_workers=6)
+ec = ThreadPoolExecutor()
 taskList = []
 for course in publicCourses:
     taskList.append(ec.submit(gc.judge, course[0], course[1], key, kind='素选'))

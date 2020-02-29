@@ -39,7 +39,6 @@ headers['cookie'], headers['token'], batchCode = al.get_params()
 '''已破除自动注销机制，实现了7*24小时运行'''
 '''因为用了线程池，按理说会有线程同步上的问题，但在这个爬虫上几乎不会产生，如果您遇到了可以联系我，我再对代码做修改'''
 
-'''自动抢课的代码也隔两天再发，也没多少行，有兴趣的盆友可以自己实现下 :)'''
 '''如果本项目有帮到你，还请点击GitHub主页右上角的star支持下 :)'''
 gc = GetCourse(headers, stdCode, batchCode)
 

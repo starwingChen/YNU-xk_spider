@@ -84,8 +84,9 @@ class GetCourse:
                     if remain and course['teacherName'] == teacher:
                         string = f'{course_name} {teacher}：{remain}人空缺'
                         print(string)
-                        return to_wechat(key, f'{course_name} 余课提醒', string)
-                        # return course_name, teacher, classtype, course['teachingClassID']
+                        to_wechat(key, f'{course_name} 余课提醒', string)
+                        res = self.post_add(course_name, teacher, classtype, course['teachingClassID'], key)
+                        return res
 
                 print(f'{course_name} {teacher}：人数已满 {time.ctime()}')
                 time.sleep(15)
@@ -94,6 +95,46 @@ class GetCourse:
                 print('登录失效，请重新登录')
                 to_wechat(key, '登录失效，请重新登录', '线程结束')
                 return False
+
+    def post_add(self, classname, teacher, classtype, classid, key):
+        query = self.__add_datastruct(classid, classtype)
+
+        url = 'http://xk.ynu.edu.cn/xsxkapp/sys/xsxkapp/elective/volunteer.do'
+        r = requests.post(url, headers=self.headers, data=query)
+        flag = 0
+        while not r:
+            if flag > 2:
+                to_wechat(key, f'{classname} 有余课，但post未成功', '线程结束')
+                break
+            print(f'[warning]: post_add()函数正尝试再次请求')
+            time.sleep(3)
+            r = requests.post(url, headers=self.headers, data=query)
+            flag += 1
+
+        messge_str = r.text.replace('null', 'None').replace('false', 'False').replace('true', 'True')
+        messge = ast.literal_eval(messge_str)['msg']
+        title = '抢课结果'
+        string = '[' + teacher + ']' + classname + ': ' + messge
+        to_wechat(key, title, string)
+        return string
+
+    def __add_datastruct(self, classid, classtype) -> dict:
+        post_course = {
+            "data": {
+                "operationType": "1",
+                "studentCode": self.stdcode,
+                "electiveBatchCode": self.batchcode,
+                "teachingClassId": classid,
+                "isMajor": "1",
+                "campus": "05",
+                "teachingClassType": classtype
+            }
+        }
+        query = {
+            'addParam': str(post_course)
+        }
+
+        return query
 
     def __judge_datastruct(self, course, classtype) -> dict:
         data = {

@@ -81,7 +81,7 @@ class GetCourse:
 
                 for course in datalist:
                     remain = int(course['classCapacity']) - int(course['numberOfFirstVolunteer'])
-                    if remain and course['teacherName'] == teacher:
+                    if remain > 0 and course['teacherName'] == teacher:
                         string = f'{course_name} {teacher}：{remain}人空缺'
                         print(string)
                         to_wechat(key, f'{course_name} 余课提醒', string)

@@ -86,6 +86,10 @@ class GetCourse:
                         print(string)
                         to_wechat(key, f'{course_name} 余课提醒', string)
                         res = self.post_add(course_name, teacher, classtype, course['teachingClassID'], key)
+                        if '该课程与已选课程时间冲突' in res:
+                            continue
+                        if '添加选课志愿成功' in res:
+                            return res
                         return res
 
                 print(f'{course_name} {teacher}：人数已满 {time.ctime()}')
@@ -192,4 +196,4 @@ if __name__ == '__main__':
     batchCode = ''
 
     test = GetCourse(Headers, stdCode, batchCode)
-    # print(test.judge('初级泰语', '李娟'))
+

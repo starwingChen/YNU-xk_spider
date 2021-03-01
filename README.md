@@ -35,10 +35,6 @@
 ## 郑重声明:
 ### 此程序仅作为技术交流之用，请不要将其用于任何形式的收费行为中  
 
-**拿这个去赚钱的（儒雅随和）必会受到山本宽的天诛  
-Those bastards who take this to make money will be executed  by Yamamoto  
-これを持って金をもうける崽種は山本寛の天誅を受けるに違いない**  
-![](./resource/rysh.jpg)
 
 
 

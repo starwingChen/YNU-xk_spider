@@ -88,6 +88,8 @@ class GetCourse:
                         res = self.post_add(course_name, teacher, classtype, course['teachingClassID'], key)
                         if '该课程与已选课程时间冲突' in res:
                             continue
+                        if '人数已满' in res:
+                            continue
                         if '添加选课志愿成功' in res:
                             return res
                         return res

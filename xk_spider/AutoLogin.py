@@ -5,7 +5,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
 import time
 import ast
-
+import random
 
 class AutoLogin:
     def __init__(self, url, path, name='', pswd=''):
@@ -53,12 +53,12 @@ class AutoLogin:
                     ele = self.driver.find_element_by_xpath('//a[@id="aPublicCourse"]')
                     ele.click()
                     flag = 2
-                    time.sleep(30)
+                    time.sleep(random.randint(20,40))
                 elif flag == 2:
                     ele = self.driver.find_element_by_xpath('//a[@id="aProgramCourse"]')
                     ele.click()
                     flag = 1
-                    time.sleep(30)
+                    time.sleep(random.randint(20,40))
 
             except NoSuchElementException:
                 print('连接已断开')
@@ -73,5 +73,5 @@ if __name__ == '__main__':
     Pswd = ''
     Headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                      'Chrome/80.0.3987.116 Safari/537.36'
+                      'Chrome/96.0.4664.110 Safari/537.36'
     }

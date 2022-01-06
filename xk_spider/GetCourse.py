@@ -2,6 +2,7 @@ import requests
 import ast
 import time
 import re
+import random
 from requests.exceptions import HTTPError
 
 
@@ -86,10 +87,16 @@ class GetCourse:
                         print(string)
                         to_wechat(key, f'{course_name} 余课提醒', string)
                         res = self.post_add(course_name, teacher, classtype, course['teachingClassID'], key)
+                        if '该课程与已选课程时间冲突' in res:
+                            continue
+                        if '人数已满' in res:
+                            continue
+                        if '添加选课志愿成功' in res:
+                            return res
                         return res
 
                 print(f'{course_name} {teacher}：人数已满 {time.ctime()}')
-                time.sleep(15)
+                time.sleep(random.randint(15,20))
 
             except HTTPError or SyntaxError:
                 print('登录失效，请重新登录')
@@ -107,7 +114,7 @@ class GetCourse:
                 to_wechat(key, f'{classname} 有余课，但post未成功', '线程结束')
                 break
             print(f'[warning]: post_add()函数正尝试再次请求')
-            time.sleep(3)
+            time.sleep(random.randint(2,4))
             r = requests.post(url, headers=self.headers, data=query)
             flag += 1
 
@@ -192,4 +199,4 @@ if __name__ == '__main__':
     batchCode = ''
 
     test = GetCourse(Headers, stdCode, batchCode)
-    # print(test.judge('初级泰语', '李娟'))
+

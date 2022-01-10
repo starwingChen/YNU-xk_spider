@@ -1,8 +1,8 @@
 # YNU-xk_spider
 云南大学选课爬虫，提供余课提醒服务，实现了自动抢课
 
-**来源于https://github.com/starwingChen/YNU-xk_spider
-**目前脚本连续运行一天左右会自动注销，等我有能力了大概会进行修复（大概）
+*来源于https://github.com/starwingChen/YNU-xk_spider
+*目前脚本连续运行一天左右会自动注销，等我有能力了大概会进行修复（大概）
 ## 项目环境：
 * python版本：3.10
 * 第三方库：selenium 3.141.0；requests 2.22.0 

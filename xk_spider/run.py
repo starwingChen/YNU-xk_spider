@@ -6,7 +6,7 @@ from xk_spider.GetCourse import GetCourse
 # 程序运行后会打开浏览器进入选课登录页面，请登录进去直到能看到具体的课程，然后就可以把浏览器关了
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                  'Chrome/80.0.3987.116 Safari/537.36'
+                  'Chrome/114.0.5735.134 Safari/537.36'
 }
 url = 'http://xk.ynu.edu.cn/xsxkapp/sys/xsxkapp/*default/index.do'
 stdCode = ''  # 在''中填入你的学号

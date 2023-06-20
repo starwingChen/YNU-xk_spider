@@ -2,9 +2,8 @@ import requests
 import ast
 import time
 import re
-import random
 from requests.exceptions import HTTPError
-
+import random
 
 def to_wechat(key, title, string):
     url = 'https://sc.ftqq.com/' + key + '.send'
@@ -96,7 +95,8 @@ class GetCourse:
                         return res
 
                 print(f'{course_name} {teacher}：人数已满 {time.ctime()}')
-                time.sleep(random.randint(15,20))
+                sleep_time = random.randint(15, 30)
+                time.sleep(sleep_time)
 
             except HTTPError or SyntaxError:
                 print('登录失效，请重新登录')
@@ -114,7 +114,7 @@ class GetCourse:
                 to_wechat(key, f'{classname} 有余课，但post未成功', '线程结束')
                 break
             print(f'[warning]: post_add()函数正尝试再次请求')
-            time.sleep(random.randint(2,4))
+            time.sleep(3)
             r = requests.post(url, headers=self.headers, data=query)
             flag += 1
 
@@ -165,33 +165,13 @@ class GetCourse:
 
         return query
 
-    # def update_cookie(self, string):
-    #     if '_WEU' in string:
-    #         self.cookies['_WEU'] = re.search(r'_WEU=(.+?)[,;]', string).group(1)
-    #     if 'JSESSIONID' in string:
-    #         self.cookies['JSESSIONID'] = re.search(r'JSESSIONID=(.+?)[,;]', string).group(1)
-    #     if 'route' in string:
-    #         routes = re.findall(r'route=(.+?)[,;]', string)
-    #         for route in routes:
-    #             self.cookies['route'][self.flag] = route
-    #             self.flag = (self.flag + 1) % 3
-    #
-    #     current = ''
-    #     for key, value in self.cookies.items():
-    #         if isinstance(value, list):
-    #             for s in value:
-    #                 current += key + '=' + s + '; '
-    #         else:
-    #             current += key + '=' + value + '; '
-    #
-    #     print(self.flag)
-    #     return current
+
 
 
 if __name__ == '__main__':
     Headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                      'Chrome/80.0.3987.116 Safari/537.36',
+                      'Chrome/114.0.5735.134 Safari/537.36',
         'cookie': '',
         'token': ''
     }

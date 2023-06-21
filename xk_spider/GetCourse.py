@@ -5,6 +5,7 @@ import re
 from requests.exceptions import HTTPError
 import random
 
+
 def to_wechat(key, title, string):
     url = 'https://sc.ftqq.com/' + key + '.send'
     dic = {
@@ -77,6 +78,7 @@ class GetCourse:
                 if res['msg'] == '未查询到登录信息':
                     print('登录失效，请重新登录')
                     to_wechat(key, '登录失效，请重新登录', '线程结束')
+
                     return False
 
                 for course in datalist:
@@ -165,13 +167,33 @@ class GetCourse:
 
         return query
 
-
+    # def update_cookie(self, string):
+    #     if '_WEU' in string:
+    #         self.cookies['_WEU'] = re.search(r'_WEU=(.+?)[,;]', string).group(1)
+    #     if 'JSESSIONID' in string:
+    #         self.cookies['JSESSIONID'] = re.search(r'JSESSIONID=(.+?)[,;]', string).group(1)
+    #     if 'route' in string:
+    #         routes = re.findall(r'route=(.+?)[,;]', string)
+    #         for route in routes:
+    #             self.cookies['route'][self.flag] = route
+    #             self.flag = (self.flag + 1) % 3
+    #
+    #     current = ''
+    #     for key, value in self.cookies.items():
+    #         if isinstance(value, list):
+    #             for s in value:
+    #                 current += key + '=' + s + '; '
+    #         else:
+    #             current += key + '=' + value + '; '
+    #
+    #     print(self.flag)
+    #     return current
 
 
 if __name__ == '__main__':
     Headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                      'Chrome/114.0.5735.134 Safari/537.36',
+                      'Chrome/114.0.3987.116 Safari/537.36',
         'cookie': '',
         'token': ''
     }
@@ -179,4 +201,3 @@ if __name__ == '__main__':
     batchCode = ''
 
     test = GetCourse(Headers, stdCode, batchCode)
-

@@ -30,8 +30,9 @@
 
 ## 成功示例：
 **ps：抢课成功的实例也类似，基本上只要有人退课你就能抢到**
+
 <img src="./resource/res1.png" height="300"><img src="./resource/res2.jpg" height="300">
-<img src="./resource/res3.jpg" height="300">
+<img src="./resource/res3.jpg" height="300"><img src="./resource/1.png" height="300">
 
 ## 郑重声明:
 ### 此程序仅作为技术交流之用，请不要将其用于任何形式的收费行为中  

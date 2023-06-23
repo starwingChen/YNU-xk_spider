@@ -21,7 +21,7 @@ class AutoLogin:
     def get_params(self):
         # 获得必要参数
         self.driver.get(self.url)
-        self.driver.implicitly_wait(5)
+        self.driver.implicitly_wait(15)
         # 查找img标签
         img_tag = self.driver.find_element_by_id('vcodeImg')
         src = img_tag.get_attribute('src')
@@ -98,6 +98,8 @@ def imgcode_online(imgurl, token):
     if result['code'] == 200:
         print(result['data'])
         return result['data']
+    elif result['time'] > 0:
+        imgcode_online(imgurl, token)
     else:
         print(result['msg'])
         return 'error'

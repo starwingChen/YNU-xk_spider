@@ -97,7 +97,7 @@ class GetCourse:
                         return res
 
                 print(f'{course_name} {teacher}：人数已满 {time.ctime()}')
-                sleep_time = random.randint(15, 30)
+                sleep_time = random.randint(300, 400)
                 time.sleep(sleep_time)
 
             except HTTPError or SyntaxError:

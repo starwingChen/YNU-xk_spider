@@ -3,8 +3,10 @@
 
 * 来源于https://github.com/starwingChen/YNU-xk_spider
 * -~~目前脚本连续运行一天左右会自动注销，等我有能力了大概会进行修复（大概~~
-* 由于这次选课时间时处考试周 此次选择的对抗注销的机制为重新登录 固需要一个稳定的验证码识别api 示例采用的免费api不太靠谱 可自行于autologin.py中的imgcode_online函数中自行根据文档修改接口
-* 若使用免费的api 请按照run.py的注释自行申请token
+* ~~由于这次选课时间时处考试周 此次选择的对抗注销的机制为重新登录 固需要一个稳定的验证码识别api~~
+* 示例采用的免费api不太靠谱 可自行于autologin.py中的imgcode_online函数中自行根据文档修改接口
+* 更进一步解决自动注销问题 2023-6-23测试三小时无注销
+* 若使用免费的验证码api 请按照run.py的注释自行申请token
 ## 项目环境：
 * python版本：3.10
 * 第三方库：selenium 4.1.0；requests 2.26.0                                 
@@ -35,6 +37,10 @@
 
 <img src="./resource/res1.png" height="300"><img src="./resource/res2.jpg" height="300">
 <img src="./resource/res3.jpg" height="300"><img src="./resource/1.png" height="300">
+
+2023-6-23注销测试
+
+<img src="./resource/2.png" height="300">
 
 ## 郑重声明:
 ### 此程序仅作为技术交流之用，请不要将其用于任何形式的收费行为中  

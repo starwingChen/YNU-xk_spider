@@ -25,6 +25,13 @@ class AutoLogin:
         # 查找img标签
         img_tag = self.driver.find_element_by_id('vcodeImg')
         src = img_tag.get_attribute('src')
+        while src == '':
+            self.driver.refresh()
+            time.sleep(3)
+            img_tag = self.driver.find_element_by_id('vcodeImg')
+            img_tag.click()
+            time.sleep(3)
+            src = img_tag.get_attribute('src')
         vcode = imgcode_online(src, self.token)
         name_ele = self.driver.find_element_by_xpath('//input[@id="loginName"]')
         name_ele.send_keys(self.name)
@@ -35,6 +42,28 @@ class AutoLogin:
         login_ele = self.driver.find_element_by_xpath('//button[@id="studentLoginBtn"]')
         login_ele.click()
         time.sleep(1)
+        # 如果出现验证码错误弹窗 重新获取验证码
+        while True:
+            error_message = self.driver.find_element(By.XPATH, '//button[@class="cv-btn cv-btn-error"]')
+            error_text = error_message.text
+            print(error_text)
+            if error_text == "验证码不正确":
+                vcode_ele.clear()
+                img_tag = self.driver.find_element_by_id('vcodeImg')
+                src = img_tag.get_attribute('src')
+                vcode = imgcode_online(src, self.token)
+                vcode_ele = self.driver.find_element_by_xpath('//input[@id="verifyCode"]')
+                vcode_ele.send_keys(vcode)
+                login_ele = self.driver.find_element_by_xpath('//button[@id="studentLoginBtn"]')
+                login_ele.click()
+                time.sleep(1)
+            elif error_text == "认证失败":
+                login_ele = self.driver.find_element_by_xpath('//button[@id="studentLoginBtn"]')
+                login_ele.click()
+                time.sleep(1)
+            else:
+                break
+
         ok_ele = self.driver.find_element_by_xpath('//button[@class="bh-btn bh-btn bh-btn-primary bh-pull-right"]')
         ok_ele.click()
         time.sleep(1)
@@ -98,7 +127,8 @@ def imgcode_online(imgurl, token):
     if result['code'] == 200:
         print(result['data'])
         return result['data']
-    elif result['time'] > 0:
+    elif result['code'] == 0:
+        time.sleep(10)
         imgcode_online(imgurl, token)
     else:
         print(result['msg'])

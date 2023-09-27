@@ -88,6 +88,7 @@ class GetCourse:
                         print(string)
                         to_wechat(key, f'{course_name} 余课提醒', string)
                         res = self.post_add(course_name, teacher, classtype, course['teachingClassID'], key)
+                        # 若同一个老师开设多门同样课程，持续抢课
                         if '该课程与已选课程时间冲突' in res:
                             continue
                         if '人数已满' in res:

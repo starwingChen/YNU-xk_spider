@@ -11,7 +11,7 @@ import json
 
 
 class AutoLogin:
-    def __init__(self, url, path, name='', pswd='', token=''):
+    def __init__(self, url, path, name='', pswd='', token=''):  # 增加自动登录中过验证码功能
         self.driver = webdriver.Chrome(executable_path=path)
         self.name = name
         self.url = url
@@ -22,9 +22,10 @@ class AutoLogin:
         # 获得必要参数
         self.driver.get(self.url)
         self.driver.implicitly_wait(15)
-        # 查找img标签
+        # 查找验证码标签
         img_tag = self.driver.find_element_by_id('vcodeImg')
         src = img_tag.get_attribute('src')
+        # 如果验证码为空 刷新页面
         while src == '':
             self.driver.refresh()
             time.sleep(3)
@@ -32,13 +33,16 @@ class AutoLogin:
             img_tag.click()
             time.sleep(3)
             src = img_tag.get_attribute('src')
+        # 通过识别接口识别并获取验证码
         vcode = imgcode_online(src, self.token)
+        # 输入用户名 密码 验证码
         name_ele = self.driver.find_element_by_xpath('//input[@id="loginName"]')
         name_ele.send_keys(self.name)
         pswd_ele = self.driver.find_element_by_xpath('//input[@id="loginPwd"]')
         pswd_ele.send_keys(self.pswd)
         vcode_ele = self.driver.find_element_by_xpath('//input[@id="verifyCode"]')
         vcode_ele.send_keys(vcode)
+        # 进行自动登录
         login_ele = self.driver.find_element_by_xpath('//button[@id="studentLoginBtn"]')
         login_ele.click()
         time.sleep(1)
@@ -63,7 +67,7 @@ class AutoLogin:
                 time.sleep(1)
             else:
                 break
-
+        # 点击选课按钮
         ok_ele = self.driver.find_element_by_xpath('//button[@class="bh-btn bh-btn bh-btn-primary bh-pull-right"]')
         ok_ele.click()
         time.sleep(1)
@@ -114,6 +118,7 @@ class AutoLogin:
                 break
 
 
+# 识别验证码(该借口地址每天提供30次识别，精度问题可通过重复识别解决)
 def imgcode_online(imgurl, token):
     data = {
         'token': token,

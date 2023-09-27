@@ -1,3 +1,4 @@
+# 该文件用于提供识别验证码思路及进行验证码识别测试（可自行修改AutoLogin.py中的过验证码函数）
 from selenium import webdriver
 import json
 import requests

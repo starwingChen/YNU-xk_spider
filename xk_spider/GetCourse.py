@@ -1,9 +1,11 @@
-import requests
 import ast
-import time
-import re
-from requests.exceptions import HTTPError
 import random
+import re
+import time
+from urllib.parse import urlparse, parse_qs
+
+import requests
+from requests.exceptions import HTTPError
 
 
 def to_wechat(key, title, string):
@@ -18,17 +20,11 @@ def to_wechat(key, title, string):
 
 
 class GetCourse:
-    def __init__(self, headers: dict, stdcode, batchcode):
+    def __init__(self, headers: dict, stdcode, batchcode, driver):
+        self.driver = driver
         self.headers = headers
         self.stdcode = stdcode
         self.batchcode = batchcode
-
-        # self.flag = 0
-        # self.cookies = {
-        #     '_WEU': '',
-        #     'JSESSIONID': '',
-        #     'route': ['', '', ''],
-        # }
 
     def judge(self, course_name, teacher, key='', kind='素选'):
         # 人数未满才返回classid
@@ -40,6 +36,22 @@ class GetCourse:
             classtype = "FANKC"
         url = 'http://xk.ynu.edu.cn/xsxkapp/sys/xsxkapp/elective/' + kind
 
+        # 获取当前的网址
+        current_url = self.driver.current_url
+
+        # 解析 URL 并获取查询参数
+        parsed_url = urlparse(current_url)
+        query_params = parse_qs(parsed_url.query)
+
+        # 获取 token
+        token = query_params.get('token', [None])[0]
+
+        if token is not None:
+            # 添加 token 到 headers
+            self.headers['Token'] = token
+        else:
+            print("No token found in the URL")
+        self.driver.quit()
         while True:
             try:
                 query = self.__judge_datastruct(course_name, classtype)
@@ -60,13 +72,18 @@ class GetCourse:
                     setcookie = ''
                 if setcookie:
                     print(f'[set-cookie]: {setcookie}')
-                    update = re.search(r'_WEU=.+?; ', setcookie).group(0)
-                    self.headers['cookie'] = re.sub(r'_WEU=.+?; ', update, self.headers['cookie'])
+                    match = re.search(r'_WEU=.+?; ', setcookie)
+                    if match is not None:
+                        update = match.group(0)
+                        self.headers['cookie'] = re.sub(r'_WEU=.+?; ', update, self.headers['cookie'])
+                    else:
+                        print("No match found")
 
                     print(f'[current cookie]: {self.headers["cookie"]}')
 
                 temp = r.text.replace('null', 'None').replace('false', 'False').replace('true', 'True')
                 res = ast.literal_eval(temp)
+
                 if kind == 'publicCourse.do':
                     datalist = res['dataList']
                 elif kind == 'programCourse.do':
@@ -88,6 +105,7 @@ class GetCourse:
                         print(string)
                         to_wechat(key, f'{course_name} 余课提醒', string)
                         res = self.post_add(course_name, teacher, classtype, course['teachingClassID'], key)
+                        # 若同一个老师开设多门同样课程，持续抢课
                         if '该课程与已选课程时间冲突' in res:
                             continue
                         if '人数已满' in res:
@@ -167,28 +185,6 @@ class GetCourse:
 
         return query
 
-    # def update_cookie(self, string):
-    #     if '_WEU' in string:
-    #         self.cookies['_WEU'] = re.search(r'_WEU=(.+?)[,;]', string).group(1)
-    #     if 'JSESSIONID' in string:
-    #         self.cookies['JSESSIONID'] = re.search(r'JSESSIONID=(.+?)[,;]', string).group(1)
-    #     if 'route' in string:
-    #         routes = re.findall(r'route=(.+?)[,;]', string)
-    #         for route in routes:
-    #             self.cookies['route'][self.flag] = route
-    #             self.flag = (self.flag + 1) % 3
-    #
-    #     current = ''
-    #     for key, value in self.cookies.items():
-    #         if isinstance(value, list):
-    #             for s in value:
-    #                 current += key + '=' + s + '; '
-    #         else:
-    #             current += key + '=' + value + '; '
-    #
-    #     print(self.flag)
-    #     return current
-
 
 if __name__ == '__main__':
     Headers = {
@@ -200,4 +196,4 @@ if __name__ == '__main__':
     stdCode = ''
     batchCode = ''
 
-    test = GetCourse(Headers, stdCode, batchCode)
+

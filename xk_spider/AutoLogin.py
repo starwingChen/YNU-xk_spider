@@ -1,45 +1,50 @@
+import ast
+import base64
+import json
+import time
+
+import requests
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-from selenium.common.exceptions import NoSuchElementException
-import time
-import ast
-import random
-import requests
-import json
 
 
 class AutoLogin:
-    def __init__(self, url, path, name='', pswd='', token=''):
+    def __init__(self, url, path, name='', pswd=''):  # 增加自动登录中过验证码功能
         self.driver = webdriver.Chrome(executable_path=path)
         self.name = name
         self.url = url
         self.pswd = pswd
-        self.token = token
 
     def get_params(self):
         # 获得必要参数
         self.driver.get(self.url)
-        self.driver.implicitly_wait(15)
-        # 查找img标签
-        img_tag = self.driver.find_element_by_id('vcodeImg')
+        WebDriverWait(self.driver, 15).until(EC.presence_of_element_located((By.ID, 'vcodeImg')))
+        # 查找验证码标签
+        img_tag = self.driver.find_element(By.ID, 'vcodeImg')
         src = img_tag.get_attribute('src')
+        print(src)
+        # 如果验证码为空 刷新页面
         while src == '':
             self.driver.refresh()
-            time.sleep(3)
-            img_tag = self.driver.find_element_by_id('vcodeImg')
+            WebDriverWait(self.driver, 15).until(EC.presence_of_element_located((By.ID, 'vcodeImg')))
+            img_tag = self.driver.find_element(By.ID, 'vcodeImg')
             img_tag.click()
             time.sleep(3)
             src = img_tag.get_attribute('src')
-        vcode = imgcode_online(src, self.token)
-        name_ele = self.driver.find_element_by_xpath('//input[@id="loginName"]')
+        # 通过识别接口识别并获取验证码
+        src = img_to_base64(src)
+        vcode = imgcode_online(src)
+        # 输入用户名 密码 验证码
+        name_ele = self.driver.find_element(By.XPATH, '//input[@id="loginName"]')
         name_ele.send_keys(self.name)
-        pswd_ele = self.driver.find_element_by_xpath('//input[@id="loginPwd"]')
+        pswd_ele = self.driver.find_element(By.XPATH, '//input[@id="loginPwd"]')
         pswd_ele.send_keys(self.pswd)
-        vcode_ele = self.driver.find_element_by_xpath('//input[@id="verifyCode"]')
+        vcode_ele = self.driver.find_element(By.XPATH, '//input[@id="verifyCode"]')
         vcode_ele.send_keys(vcode)
-        login_ele = self.driver.find_element_by_xpath('//button[@id="studentLoginBtn"]')
+        # 进行自动登录
+        login_ele = self.driver.find_element(By.XPATH, '//button[@id="studentLoginBtn"]')
         login_ele.click()
         time.sleep(1)
         # 如果出现验证码错误弹窗 重新获取验证码
@@ -49,90 +54,88 @@ class AutoLogin:
             print(error_text)
             if error_text == "验证码不正确":
                 vcode_ele.clear()
-                img_tag = self.driver.find_element_by_id('vcodeImg')
+                img_tag = self.driver.find_element(By.ID, 'vcodeImg')
+                img_tag.click()
+                time.sleep(3)
                 src = img_tag.get_attribute('src')
-                vcode = imgcode_online(src, self.token)
-                vcode_ele = self.driver.find_element_by_xpath('//input[@id="verifyCode"]')
+                src = img_to_base64(src)
+                vcode = imgcode_online(src)
+                vcode_ele = self.driver.find_element(By.XPATH, '//input[@id="verifyCode"]')
                 vcode_ele.send_keys(vcode)
-                login_ele = self.driver.find_element_by_xpath('//button[@id="studentLoginBtn"]')
+                login_ele = self.driver.find_element(By.XPATH, '//button[@id="studentLoginBtn"]')
                 login_ele.click()
                 time.sleep(1)
             elif error_text == "认证失败":
-                login_ele = self.driver.find_element_by_xpath('//button[@id="studentLoginBtn"]')
+                login_ele = self.driver.find_element(By.XPATH, '//button[@id="studentLoginBtn"]')
                 login_ele.click()
                 time.sleep(1)
             else:
                 break
-
-        ok_ele = self.driver.find_element_by_xpath('//button[@class="bh-btn bh-btn bh-btn-primary bh-pull-right"]')
+        # 点击选课按钮
+        WebDriverWait(self.driver, 15).until(EC.presence_of_element_located((By.XPATH, '//button[@class="bh-btn '
+                                                                                       'bh-btn bh-btn-primary '
+                                                                                       'bh-pull-right"]')))
+        ok_ele = self.driver.find_element(By.XPATH, '//button[@class="bh-btn bh-btn bh-btn-primary bh-pull-right"]')
         ok_ele.click()
         time.sleep(1)
-        start_ele = self.driver.find_element_by_xpath('//button[@id="courseBtn"]')
+        start_ele = self.driver.find_element(By.XPATH, '//button[@id="courseBtn"]')
         start_ele.click()
 
+        if WebDriverWait(self.driver, 15).until(EC.presence_of_element_located((By.XPATH, '//button[@class="bh-btn '
+                                                                                          'cv-btn bh-btn-primary '
+                                                                                          'bh-pull-right"]'))):
+            button_ele = self.driver.find_element(By.XPATH,
+                                                  '//button[@class="bh-btn cv-btn bh-btn-primary bh-pull-right"]')
+            button_ele.click()
         if WebDriverWait(self.driver, 180).until(EC.presence_of_element_located((By.ID, 'aPublicCourse'))):
             time.sleep(2)  # waiting for loading
             cookie_lis = self.driver.get_cookies()
             cookies = ''
             for item in cookie_lis:
                 cookies += item['name'] + '=' + item['value'] + '; '
-            token = self.driver.execute_script('return sessionStorage.getItem("token");')
+            token = self.driver.execute_script('return sessionStorage.getItem("token");')  # 暂时无用
             batch_str = self.driver. \
                 execute_script('return sessionStorage.getItem("currentBatch");').replace('null', 'None').replace(
                 'false', 'False').replace('true', 'True')
             batch = ast.literal_eval(batch_str)
-            self.driver.quit()
+            # self.driver.quit()
 
-            return cookies, token, batch['code']
+            return cookies, batch['code']
 
         else:
             print('page load failed')
             self.driver.quit()
             return False
 
-    # 暂时无用
-    def keep_connect(self):
-        flag = 1
-        st = time.perf_counter()
-        while True:
-            try:
-                if flag == 1:
-                    ele = self.driver.find_element_by_xpath('//a[@id="aPublicCourse"]')
-                    ele.click()
-                    flag = 2
-                    time.sleep(random.randint(20, 40))
-                elif flag == 2:
-                    ele = self.driver.find_element_by_xpath('//a[@id="aProgramCourse"]')
-                    ele.click()
-                    flag = 1
-                    time.sleep(random.randint(20, 40))
 
-            except NoSuchElementException:
-                print('连接已断开')
-                print(f'运行时间：{(time.perf_counter() - st) // 60} min')
-                # self.driver.quit()
-                break
-
-
-def imgcode_online(imgurl, token):
-    data = {
-        'token': token,
-        'type': 'online',
-        'uri': imgurl
-    }
-    # URL =   # 接口地址
-    response = requests.post('http://www.bhshare.cn/imgcode/', data=data)
-    print(response.text)
-    result = json.loads(response.text)
-    if result['code'] == 200:
-        print(result['data'])
-        return result['data']
-    elif result['code'] == 0:
-        time.sleep(10)
-        imgcode_online(imgurl, token)
+# 识别验证码(自己在本地部署或者嫖别人的)
+def imgcode_online(imgurl):
+    d = {'data': imgurl}
+    response = requests.post('http://127.0.0.1:5000/base64img', data=d)
+    if response.text:
+        try:
+            result = json.loads(response.text)
+            if result['code'] == 200:
+                print(result['data'])
+                return result['data']
+            elif result['code'] != 200:
+                time.sleep(10)
+                imgcode_online(imgurl)
+            else:
+                print(result['msg'])
+                return 'error'
+        except json.JSONDecodeError:
+            print("Invalid JSON received")
+            return 'error'
     else:
-        print(result['msg'])
+        print("Empty response received")
         return 'error'
+
+
+def img_to_base64(img_url):
+    response = requests.get(img_url)
+    img_data = base64.b64encode(response.content).decode('utf-8')
+    return 'data:image/jpeg;base64,' + img_data
 
 
 if __name__ == '__main__':

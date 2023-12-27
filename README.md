@@ -27,6 +27,19 @@
 
 另外，因为程序使用到了selenium模块，因此必须要下载Chrome浏览器驱动。具体教程[参考教程见此，另外不需要添加环境变量，记住你的下载路径就行](https://jingyan.baidu.com/article/f7ff0bfcdd89ed2e27bb1379.html)，如果您的电脑未安装Chrome浏览器，这边建议您安装一个，而且没有Chrome此程序无法运行
 
+## 自行搭建api方法
+
+打开api.py
+
+```python
+pip install ddddocr
+pip install flask
+```
+
+然后直接运行api.py
+
+(也可在腾讯云函数搭建)
+
 **如果本项目有帮到你，可以点击右上角的star支持一下 :)**
 
 ## 成功示例：

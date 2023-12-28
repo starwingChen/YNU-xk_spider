@@ -1,6 +1,7 @@
 import ast
 import base64
 import json
+import threading
 import time
 
 import requests
@@ -14,13 +15,30 @@ from urllib.parse import urlparse, parse_qs
 
 class AutoLogin:
     def __init__(self, url, path, name='', pswd=''):  # 增加自动登录中过验证码功能
+        self.timer = None
         self.driver = webdriver.Chrome(executable_path=path)
         self.name = name
         self.url = url
         self.pswd = pswd
 
+    def start_timer(self):
+        # 启动一个定时器，在 60 秒后调用 close_driver 方法
+        self.timer = threading.Timer(60.0, self.close_driver)
+        self.timer.start()
+
+    def close_driver(self):
+        # 关闭浏览器驱动
+        if self.driver:
+            self.driver.quit()
+            self.driver = None
+        # 停止并清除定时器
+        if self.timer:
+            self.timer.cancel()
+            self.timer = None
+
     def get_params(self):
         # 获得必要参数
+        self.start_timer()
         self.driver.get(self.url)
         WebDriverWait(self.driver, 15).until(EC.presence_of_element_located((By.ID, 'vcodeImg')))
         # 查找验证码标签
@@ -68,6 +86,7 @@ class AutoLogin:
                 login_ele.click()
                 time.sleep(1)
             elif error_text == "认证失败":
+                self.close_driver()
                 return False
             else:
                 break
@@ -118,12 +137,12 @@ class AutoLogin:
                 print("Token: {}".format(token))
             else:
                 print("No token found in the URL")
-            self.driver.quit()
+            self.close_driver()
             return cookies, batch['code'], token
 
         else:
             print('page load failed')
-            self.driver.quit()
+            self.close_driver()
             return False
 
 

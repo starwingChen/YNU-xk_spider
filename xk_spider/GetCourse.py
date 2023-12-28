@@ -2,8 +2,6 @@ import ast
 import random
 import re
 import time
-from urllib.parse import urlparse, parse_qs
-
 import requests
 from requests.exceptions import HTTPError
 
@@ -36,22 +34,6 @@ class GetCourse:
             classtype = "FANKC"
         url = 'http://xk.ynu.edu.cn/xsxkapp/sys/xsxkapp/elective/' + kind
 
-        # 获取当前的网址
-        current_url = self.driver.current_url
-
-        # 解析 URL 并获取查询参数
-        parsed_url = urlparse(current_url)
-        query_params = parse_qs(parsed_url.query)
-
-        # 获取 token
-        token = query_params.get('token', [None])[0]
-
-        if token is not None:
-            # 添加 token 到 headers
-            self.headers['Token'] = token
-        else:
-            print("No token found in the URL")
-        self.driver.quit()
         while True:
             try:
                 query = self.__judge_datastruct(course_name, classtype)

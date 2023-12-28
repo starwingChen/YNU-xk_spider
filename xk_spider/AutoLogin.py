@@ -8,6 +8,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
+from urllib.parse import urlparse, parse_qs
 
 
 class AutoLogin:
@@ -98,9 +99,23 @@ class AutoLogin:
                 execute_script('return sessionStorage.getItem("currentBatch");').replace('null', 'None').replace(
                 'false', 'False').replace('true', 'True')
             batch = ast.literal_eval(batch_str)
-            # self.driver.quit()
+            # 获取当前的网址
+            current_url = self.driver.current_url
 
-            return cookies, batch['code']
+            # 解析 URL 并获取查询参数
+            parsed_url = urlparse(current_url)
+            query_params = parse_qs(parsed_url.query)
+
+            # 获取 token
+            token = query_params.get('token', [None])[0]
+
+            if token is not None:
+                print("Token found in the URL")
+                print("Token: {}".format(token))
+            else:
+                print("No token found in the URL")
+            self.driver.quit()
+            return cookies, batch['code'], token
 
         else:
             print('page load failed')

@@ -23,7 +23,8 @@ publicCourses = [
 
 # 下面这个列表填你想查询的 主修课，包括必修和选修，格式填写同上
 programCourse = [
-    ['电子商务与政务', '赵娜'],
+    # ['启发式与元启发式算法', '江华'],
+    # ['新技术专题（2）', '王普明'],
 ]
 
 '''以上两个列表理论上可以接受任意数量的课程，填写模板如下。但数量最好不要超过你CPU的核心数（一般电脑都在4核以上）
@@ -35,7 +36,9 @@ programCourse = [
 '''
 while True:
     al = AutoLogin(url, path, stdCode, pswd)
-    headers['cookie'], batchCode = al.get_params()
+    headers['cookie'], batchCode, Token = al.get_params()
+    headers['Token'] = Token
+    headers['Authorization'] = 'Bearer ' + Token
 
     '''至此程序已经可以运行了。在程序运行期间请不要登录选课系统，否则程序会终止运行'''
     '''已破除自动注销机制，实现了7*24小时运行，如果程序突然中止了，那是选课系统在更新，这个没办法解决，只能等更新结束后重新运行'''

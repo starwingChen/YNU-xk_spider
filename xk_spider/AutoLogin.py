@@ -5,6 +5,7 @@ import time
 
 import requests
 from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
@@ -67,6 +68,7 @@ class AutoLogin:
                 login_ele.click()
                 time.sleep(1)
             elif error_text == "认证失败":
+                time.sleep(3)
                 login_ele = self.driver.find_element(By.XPATH, '//button[@id="studentLoginBtn"]')
                 login_ele.click()
                 time.sleep(1)
@@ -82,12 +84,17 @@ class AutoLogin:
         start_ele = self.driver.find_element(By.XPATH, '//button[@id="courseBtn"]')
         start_ele.click()
 
-        if WebDriverWait(self.driver, 15).until(EC.presence_of_element_located((By.XPATH, '//button[@class="bh-btn '
-                                                                                          'cv-btn bh-btn-primary '
-                                                                                          'bh-pull-right"]'))):
-            button_ele = self.driver.find_element(By.XPATH,
-                                                  '//button[@class="bh-btn cv-btn bh-btn-primary bh-pull-right"]')
+        try:
+            WebDriverWait(self.driver, 15).until(EC.presence_of_element_located((By.XPATH, '//button[@class="bh-btn '
+                                                                                           'cv-btn bh-btn-primary '
+                                                                                           'bh-pull-right"]')))
+            # 如果按钮出现，点击按钮
+            button_ele = self.driver.find_element(By.XPATH, '//button[@class="bh-btn cv-btn bh-btn-primary '
+                                                            'bh-pull-right"]')
             button_ele.click()
+        except TimeoutException:
+            # 如果按钮没有出现，可以选择忽略，继续运行其他代码
+            pass
         if WebDriverWait(self.driver, 180).until(EC.presence_of_element_located((By.ID, 'aPublicCourse'))):
             time.sleep(2)  # waiting for loading
             cookie_lis = self.driver.get_cookies()

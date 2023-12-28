@@ -23,8 +23,8 @@ publicCourses = [
 
 # 下面这个列表填你想查询的 主修课，包括必修和选修，格式填写同上
 programCourse = [
-    # ['启发式与元启发式算法', '江华'],
-    # ['新技术专题（2）', '王普明'],
+    ['启发式与元启发式算法', '江华'],
+    ['新技术专题（2）', '王普明'],
 ]
 
 '''以上两个列表理论上可以接受任意数量的课程，填写模板如下。但数量最好不要超过你CPU的核心数（一般电脑都在4核以上）
@@ -45,7 +45,7 @@ while True:
     '''因为用了线程池，按理说会有线程同步上的问题，但在这个爬虫上几乎不会产生，如果您遇到了可以联系我，我再对代码做修改'''
 
     '''如果本项目有帮到你，还请点击GitHub主页右上角的star支持下 :)'''
-    gc = GetCourse(headers, stdCode, batchCode, al.driver)
+    gc = GetCourse(headers, stdCode, batchCode, al.driver, url, path, stdCode, pswd)
 
     ec = ThreadPoolExecutor()
     taskList = []

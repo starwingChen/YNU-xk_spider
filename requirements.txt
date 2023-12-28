@@ -1,2 +1,4 @@
 selenium == 4.1.0
-requests == 2.26.0
+requests
+flask
+ddddocr

@@ -2,8 +2,12 @@ import ast
 import random
 import re
 import time
+
 import requests
 from requests.exceptions import HTTPError
+from requests.utils import dict_from_cookiejar
+
+from xk_spider.AutoLogin import AutoLogin
 
 
 def to_wechat(key, title, string):
@@ -18,11 +22,15 @@ def to_wechat(key, title, string):
 
 
 class GetCourse:
-    def __init__(self, headers: dict, stdcode, batchcode, driver):
+    def __init__(self, headers: dict, stdcode, batchcode, driver, url, path, stdCode, pswd):
         self.driver = driver
         self.headers = headers
         self.stdcode = stdcode
         self.batchcode = batchcode
+        self.url = url
+        self.path = path
+        self.stdCode = stdCode
+        self.pswd = pswd
 
     def judge(self, course_name, teacher, key='', kind='素选'):
         # 人数未满才返回classid
@@ -49,12 +57,17 @@ class GetCourse:
                     r = requests.post(url, data=query, headers=self.headers)
 
                 try:
-                    setcookie = r.headers['set-cookie']
+                    # setcookie = r.headers['set-cookie']
+                    setcookie = r.cookies
                 except KeyError:
                     setcookie = ''
                 if setcookie:
-                    print(f'[set-cookie]: {setcookie}')
-                    match = re.search(r'_WEU=.+?; ', setcookie)
+                    # 将 RequestsCookieJar 对象转换为字典
+                    cookies_dict = dict_from_cookiejar(setcookie)
+                    # 将字典转换为字符串
+                    setcookie_str = '; '.join([f'{k}={v}' for k, v in cookies_dict.items()])
+                    # 在字符串中搜索
+                    match = re.search(r'_WEU=.+?; ', setcookie_str)
                     if match is not None:
                         update = match.group(0)
                         self.headers['cookie'] = re.sub(r'_WEU=.+?; ', update, self.headers['cookie'])
@@ -66,18 +79,19 @@ class GetCourse:
                 temp = r.text.replace('null', 'None').replace('false', 'False').replace('true', 'True')
                 res = ast.literal_eval(temp)
 
+                if res['msg'] == '未查询到登录信息':
+                    print('登录失效，正在重新登录...')
+                    al = AutoLogin(self.url, self.path, self.stdCode, self.pswd)  # 创建 AutoLogin 对象
+                    self.headers['cookie'], batchCode, Token = al.get_params()  # 调用登录方法获取新的 cookie 和 token
+                    self.headers['Authorization'] = 'Bearer ' + Token  # 更新 headers 中的 token
+                    print('重新登录成功')
+
                 if kind == 'publicCourse.do':
                     datalist = res['dataList']
                 elif kind == 'programCourse.do':
                     datalist = res['dataList'][0]['tcList']
                 else:
                     print('kind参数错误，请重新输入')
-                    return False
-
-                if res['msg'] == '未查询到登录信息':
-                    print('登录失效，请重新登录')
-                    to_wechat(key, '登录失效，请重新登录', '线程结束')
-
                     return False
 
                 for course in datalist:
@@ -97,7 +111,7 @@ class GetCourse:
                         return res
 
                 print(f'{course_name} {teacher}：人数已满 {time.ctime()}')
-                sleep_time = random.randint(300, 400)
+                sleep_time = random.randint(10, 20)
                 time.sleep(sleep_time)
 
             except HTTPError or SyntaxError:
@@ -177,5 +191,3 @@ if __name__ == '__main__':
     }
     stdCode = ''
     batchCode = ''
-
-

@@ -85,9 +85,9 @@ class AutoLogin:
         start_ele.click()
 
         try:
-            WebDriverWait(self.driver, 15).until(EC.presence_of_element_located((By.XPATH, '//button[@class="bh-btn '
-                                                                                           'cv-btn bh-btn-primary '
-                                                                                           'bh-pull-right"]')))
+            WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.XPATH, '//button[@class="bh-btn '
+                                                                                          'cv-btn bh-btn-primary '
+                                                                                          'bh-pull-right"]')))
             # 如果按钮出现，点击按钮
             button_ele = self.driver.find_element(By.XPATH, '//button[@class="bh-btn cv-btn bh-btn-primary '
                                                             'bh-pull-right"]')
@@ -95,7 +95,7 @@ class AutoLogin:
         except TimeoutException:
             # 如果按钮没有出现，可以选择忽略，继续运行其他代码
             pass
-        if WebDriverWait(self.driver, 180).until(EC.presence_of_element_located((By.ID, 'aPublicCourse'))):
+        if WebDriverWait(self.driver, 18).until(EC.presence_of_element_located((By.ID, 'aPublicCourse'))):
             time.sleep(2)  # waiting for loading
             cookie_lis = self.driver.get_cookies()
             cookies = ''

@@ -25,7 +25,7 @@
 
 我已经尽量把代码封装成小白能使用的程度了，不需要有太多前端和python基础，安装完运行环境，照着注释将字段填好就完事了。程序已经做了初步的异常检测，如果您在运行时有什么问题，也可以在issue里提出来
 
-另外，因为程序使用到了selenium模块，因此必须要下载Chrome浏览器驱动。具体教程[参考教程见此，另外不需要添加环境变量，记住你的下载路径就行](https://jingyan.baidu.com/article/f7ff0bfcdd89ed2e27bb1379.html)，如果您的电脑未安装Chrome浏览器，这边建议您安装一个，而且没有Chrome此程序无法运行
+另外，因为程序使用到了selenium模块，因此必须要下载Chrome浏览器驱动。具体教程[参考教程见此，另外不需要添加环境变量，记住你的下载路径就行](https://jingyan.baidu.com/article/f7ff0bfcdd89ed2e27bb1379.html)，如果您的电脑未安装Chrome浏览器，这边建议您安装一个，而且没有Chrome此程序无法运行。chreomeDriver下载地址:https://googlechromelabs.github.io/chrome-for-testing/
 
 ## 自行搭建api方法
 

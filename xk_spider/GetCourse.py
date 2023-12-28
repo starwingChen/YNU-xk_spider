@@ -80,11 +80,9 @@ class GetCourse:
                 res = ast.literal_eval(temp)
 
                 if res['msg'] == '未查询到登录信息':
-                    print('登录失效，正在重新登录...')
-                    al = AutoLogin(self.url, self.path, self.stdCode, self.pswd)  # 创建 AutoLogin 对象
-                    self.headers['cookie'], batchCode, Token = al.get_params()  # 调用登录方法获取新的 cookie 和 token
-                    self.headers['Authorization'] = 'Bearer ' + Token  # 更新 headers 中的 token
-                    print('重新登录成功')
+                    print('登录失效，请重新登录')
+                    to_wechat(key, '登录失效，请重新登录', '线程结束')
+                    return False
 
                 if kind == 'publicCourse.do':
                     datalist = res['dataList']

@@ -18,7 +18,7 @@ path = ''  # 填写你的chromedriver路径，如 '/usr/local/bin/chromedriver'
 # -----  注意，课程名称要保证在选课页面你能用这个名称搜得出来 !!!  -----
 
 publicCourses = [
-    # ['环境教育', '蔡葵'],  # 这是个测试用例，可以先不修改直接运行看看是否成功，如果不小心抢到了自己手动退掉就好
+    ['幸福在哪里', '姜素萍'],  # 这是个测试用例，可以先不修改直接运行看看是否成功，如果不小心抢到了自己手动退掉就好
 ]
 
 # 下面这个列表填你想查询的 主修课，包括必修和选修，格式填写同上
@@ -40,11 +40,6 @@ while True:
     headers['Token'] = Token
     headers['Authorization'] = 'Bearer ' + Token
 
-    '''至此程序已经可以运行了。在程序运行期间请不要登录选课系统，否则程序会终止运行'''
-    '''已破除自动注销机制，实现了7*24小时运行，如果程序突然中止了，那是选课系统在更新，这个没办法解决，只能等更新结束后重新运行'''
-    '''因为用了线程池，按理说会有线程同步上的问题，但在这个爬虫上几乎不会产生，如果您遇到了可以联系我，我再对代码做修改'''
-
-    '''如果本项目有帮到你，还请点击GitHub主页右上角的star支持下 :)'''
     gc = GetCourse(headers, stdCode, batchCode, al.driver, url, path, stdCode, pswd)
 
     ec = ThreadPoolExecutor()
@@ -55,4 +50,7 @@ while True:
         taskList.append(ec.submit(gc.judge, course[0], course[1], key, kind='主修'))
 
     for future in as_completed(taskList):
-        print(future.result())
+        result = future.result()
+        print(result)
+        if not result:
+            break  # If the judge method returns False, break the loop to start a new login process

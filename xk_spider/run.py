@@ -1,5 +1,4 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
-
 from xk_spider.AutoLogin import AutoLogin
 from xk_spider.GetCourse import GetCourse
 
@@ -34,23 +33,28 @@ programCourse = [
     ['课程3', '老师3'], 
 ]
 '''
+
+
 while True:
-    al = AutoLogin(url, path, stdCode, pswd)
-    headers['cookie'], batchCode, Token = al.get_params()
-    headers['Token'] = Token
-    headers['Authorization'] = 'Bearer ' + Token
+    try:
+        al = AutoLogin(url, path, stdCode, pswd)
+        headers['cookie'], batchCode, Token = al.get_params()
+        headers['Token'] = Token
+        headers['Authorization'] = 'Bearer ' + Token
 
-    gc = GetCourse(headers, stdCode, batchCode, al.driver, url, path, stdCode, pswd)
+        gc = GetCourse(headers, stdCode, batchCode, al.driver, url, path, stdCode, pswd)
 
-    ec = ThreadPoolExecutor()
-    taskList = []
-    for course in publicCourses:
-        taskList.append(ec.submit(gc.judge, course[0], course[1], key, kind='素选'))
-    for course in programCourse:
-        taskList.append(ec.submit(gc.judge, course[0], course[1], key, kind='主修'))
+        ec = ThreadPoolExecutor()
+        taskList = []
+        for course in publicCourses:
+            taskList.append(ec.submit(gc.judge, course[0], course[1], key, kind='素选'))
+        for course in programCourse:
+            taskList.append(ec.submit(gc.judge, course[0], course[1], key, kind='主修'))
 
-    for future in as_completed(taskList):
-        result = future.result()
-        print(result)
-        if not result:
-            break  # If the judge method returns False, break the loop to start a new login process
+        for future in as_completed(taskList):
+            result = future.result()
+            print(result)
+            if not result:
+                break  # If the judge method returns False, break the loop to start a new login process
+    except Exception as e:
+        print(f"An error occurred: {e}, restarting the login process.")

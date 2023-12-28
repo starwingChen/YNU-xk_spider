@@ -7,8 +7,6 @@ import requests
 from requests.exceptions import HTTPError
 from requests.utils import dict_from_cookiejar
 
-from xk_spider.AutoLogin import AutoLogin
-
 
 def to_wechat(key, title, string):
     url = 'https://sc.ftqq.com/' + key + '.send'
@@ -81,7 +79,7 @@ class GetCourse:
 
                 if res['msg'] == '未查询到登录信息':
                     print('登录失效，请重新登录')
-                    to_wechat(key, '登录失效，请重新登录', '线程结束')
+                    # to_wechat(key, '登录失效，请重新登录', '线程结束')
                     return False
 
                 if kind == 'publicCourse.do':
@@ -109,12 +107,12 @@ class GetCourse:
                         return res
 
                 print(f'{course_name} {teacher}：人数已满 {time.ctime()}')
-                sleep_time = random.randint(10, 20)
+                sleep_time = random.randint(3, 10)
                 time.sleep(sleep_time)
 
             except HTTPError or SyntaxError:
                 print('登录失效，请重新登录')
-                to_wechat(key, '登录失效，请重新登录', '线程结束')
+                # to_wechat(key, '登录失效，请重新登录', '线程结束')
                 return False
 
     def post_add(self, classname, teacher, classtype, classid, key):

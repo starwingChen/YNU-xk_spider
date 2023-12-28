@@ -51,8 +51,9 @@ class AutoLogin:
         time.sleep(1)
         # 如果出现验证码错误弹窗 重新获取验证码
         while True:
-            error_message = self.driver.find_element(By.XPATH, '//button[@class="cv-btn cv-btn-error"]')
+            error_message = self.driver.find_element(By.XPATH, '//button[@id="errorMsg"]')
             error_text = error_message.text
+            login_ele = self.driver.find_element(By.XPATH, '//button[@id="studentLoginBtn"]')
             print(error_text)
             if error_text == "验证码不正确":
                 vcode_ele.clear()
@@ -64,14 +65,10 @@ class AutoLogin:
                 vcode = imgcode_online(src)
                 vcode_ele = self.driver.find_element(By.XPATH, '//input[@id="verifyCode"]')
                 vcode_ele.send_keys(vcode)
-                login_ele = self.driver.find_element(By.XPATH, '//button[@id="studentLoginBtn"]')
                 login_ele.click()
                 time.sleep(1)
             elif error_text == "认证失败":
-                time.sleep(3)
-                login_ele = self.driver.find_element(By.XPATH, '//button[@id="studentLoginBtn"]')
-                login_ele.click()
-                time.sleep(1)
+                return False
             else:
                 break
         # 点击选课按钮

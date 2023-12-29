@@ -38,7 +38,10 @@ programCourse = [
 while True:
     try:
         al = AutoLogin(url, path, stdCode, pswd)
-        headers['cookie'], batchCode, Token = al.get_params()
+        params = al.get_params()
+        if not params:
+            continue
+        headers['cookie'], batchCode, Token = params
         headers['Token'] = Token
         headers['Authorization'] = 'Bearer ' + Token
 

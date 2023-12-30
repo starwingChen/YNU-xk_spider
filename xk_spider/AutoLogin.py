@@ -23,7 +23,7 @@ class AutoLogin:
 
     def start_timer(self):
         # 启动一个定时器，在 60 秒后调用 close_driver 方法
-        self.timer = threading.Timer(60.0, self.close_driver)
+        self.timer = threading.Timer(60.0, self.close_driver2)
         self.timer.start()
 
     def close_driver(self):
@@ -35,6 +35,18 @@ class AutoLogin:
         if self.timer:
             self.timer.cancel()
             self.timer = None
+
+    def close_driver2(self):
+        # 关闭浏览器驱动
+        if self.driver:
+            self.driver.quit()
+            self.driver = None
+        # 停止并清除定时器
+        if self.timer:
+            self.timer.cancel()
+            self.timer = None
+        # 如果驱动运行超过60秒，引发一个异常
+        return False
 
     def get_params(self):
         # 获得必要参数
@@ -67,29 +79,35 @@ class AutoLogin:
         login_ele = self.driver.find_element(By.XPATH, '//button[@id="studentLoginBtn"]')
         login_ele.click()
         time.sleep(1)
+        flag = 0
         # 如果出现验证码错误弹窗 重新获取验证码
         while True:
-            error_message = self.driver.find_element(By.XPATH, '//button[@id="errorMsg"]')
-            error_text = error_message.text
-            login_ele = self.driver.find_element(By.XPATH, '//button[@id="studentLoginBtn"]')
-            print(error_text)
-            if error_text == "验证码不正确":
-                vcode_ele.clear()
-                img_tag = self.driver.find_element(By.ID, 'vcodeImg')
-                img_tag.click()
-                time.sleep(3)
-                src = img_tag.get_attribute('src')
-                src = img_to_base64(src)
-                vcode = imgcode_online(src)
-                vcode_ele = self.driver.find_element(By.XPATH, '//input[@id="verifyCode"]')
-                vcode_ele.send_keys(vcode)
-                login_ele.click()
-                time.sleep(1)
-            elif error_text == "认证失败":
+            if flag < 3:
+                error_message = self.driver.find_element(By.XPATH, '//button[@id="errorMsg"]')
+                error_text = error_message.text
+                login_ele = self.driver.find_element(By.XPATH, '//button[@id="studentLoginBtn"]')
+                print(error_text)
+                if error_text == "验证码不正确":
+                    flag += 1
+                    vcode_ele.clear()
+                    img_tag = self.driver.find_element(By.ID, 'vcodeImg')
+                    img_tag.click()
+                    time.sleep(3)
+                    src = img_tag.get_attribute('src')
+                    src = img_to_base64(src)
+                    vcode = imgcode_online(src)
+                    vcode_ele = self.driver.find_element(By.XPATH, '//input[@id="verifyCode"]')
+                    vcode_ele.send_keys(vcode)
+                    login_ele.click()
+                    time.sleep(1)
+                elif error_text == "认证失败":
+                    self.close_driver()
+                    return False
+                else:
+                    break
+            else:
                 self.close_driver()
                 return False
-            else:
-                break
         # 点击选课按钮
         WebDriverWait(self.driver, 15).until(EC.presence_of_element_located((By.XPATH, '//button[@class="bh-btn '
                                                                                        'bh-btn bh-btn-primary '
@@ -111,7 +129,7 @@ class AutoLogin:
         except TimeoutException:
             # 如果按钮没有出现，可以选择忽略，继续运行其他代码
             pass
-        if WebDriverWait(self.driver, 18).until(EC.presence_of_element_located((By.ID, 'aPublicCourse'))):
+        if WebDriverWait(self.driver, 8).until(EC.presence_of_element_located((By.ID, 'aPublicCourse'))):
             time.sleep(2)  # waiting for loading
             cookie_lis = self.driver.get_cookies()
             cookies = ''

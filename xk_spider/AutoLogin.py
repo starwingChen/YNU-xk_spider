@@ -165,7 +165,24 @@ class AutoLogin:
 
 
 # 识别验证码(自己在本地部署或者嫖别人的)
+
 def imgcode_online(imgurl):
+    if not hasattr(imgcode_online, "counter"):
+        imgcode_online.counter = 0
+    if not hasattr(imgcode_online, "timestamp"):
+        imgcode_online.timestamp = time.time()
+
+    current_time = time.time()
+    if current_time - imgcode_online.timestamp > 60:
+        imgcode_online.counter = 0
+        imgcode_online.timestamp = current_time
+
+    imgcode_online.counter += 1
+    if imgcode_online.counter > 10:
+        imgcode_online.counter = 0
+        imgcode_online.timestamp = current_time
+        return False
+
     d = {'data': imgurl}
     response = requests.post('http://127.0.0.1:5000/base64img', data=d)
     if response.text:
@@ -176,7 +193,7 @@ def imgcode_online(imgurl):
                 return result['data']
             elif result['code'] != 200:
                 time.sleep(10)
-                imgcode_online(imgurl)
+                return imgcode_online(imgurl)
             else:
                 print(result['msg'])
                 return 'error'

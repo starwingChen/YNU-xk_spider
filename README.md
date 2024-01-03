@@ -23,7 +23,7 @@
 4. **运行api.py文件**(!!!!本地识别一定要先运行这个)
 5. **打开run.py文件。** 
 6. **按照文件注释中的提示填写好字段，运行程序。**
-  需要填的字段都已经用注释的形式标明了，填完直接运行即可。这之后程序会开始循环执行，同时打开一个窗口，登录进去等窗口自己关闭后就可以不用管了  
+    需要填的字段都已经用注释的形式标明了，填完直接运行即可。这之后程序会开始循环执行，同时打开一个窗口，登录进去等窗口自己关闭后就可以不用管了  
 
 我已经尽量把代码封装成小白能使用的程度了，不需要有太多前端和python基础，安装完运行环境，照着注释将字段填好就完事了。程序已经做了初步的异常检测，如果您在运行时有什么问题，也可以在issue里提出来
 
@@ -43,6 +43,71 @@ pip install flask
 (也可在腾讯云函数搭建)
 
 **如果本项目有帮到你，可以点击右上角的star支持一下 :)**
+
+### 云函数搭建方法
+
+```shell
+docker pull ccr.ccs.tencentyun.com/ocrr/ocr:2.0.0
+```
+
+打完tag后上传到你自己的仓库然后使用云函数docker部署
+
+![image-20240103114026538](https://raw.githubusercontent.com/davidwushi1145/photo2/main/image-20240103114026538.png)
+
+高级配置拉满
+
+![image-20240103114116110](https://raw.githubusercontent.com/davidwushi1145/photo2/main/image-20240103114116110.png)
+
+然后测试即可
+
+![image-20240103114217426](https://raw.githubusercontent.com/davidwushi1145/photo2/main/image-20240103114217426.png)
+
+### 注意
+
+使用云函数需要修改AutoLogin.py中的imgcode_online函数
+
+```python
+def imgcode_online(imgurl):
+    if not hasattr(imgcode_online, "counter"):
+        imgcode_online.counter = 0
+    if not hasattr(imgcode_online, "timestamp"):
+        imgcode_online.timestamp = time.time()
+
+    current_time = time.time()
+    if current_time - imgcode_online.timestamp > 60:
+        imgcode_online.counter = 0
+        imgcode_online.timestamp = current_time
+
+    imgcode_online.counter += 1
+    if imgcode_online.counter > 10:
+        imgcode_online.counter = 0
+        imgcode_online.timestamp = current_time
+        return False
+
+    # Convert base64 image to bytes
+    img_data = base64.b64decode(imgurl.split(",")[-1])
+    files = {'image': ('image.jpg', img_data)}
+    response = requests.post('云函数给你的访问路径url/ocr/file/json', files=files)
+
+    if response.text:
+        try:
+            result = json.loads(response.text)
+            if result['status'] == 200:
+                print(result['result'])
+                return result['result']
+            elif result['status'] != 200:
+                time.sleep(10)
+                return imgcode_online(imgurl)
+            else:
+                print(result['msg'])
+                return 'error'
+        except json.JSONDecodeError:
+            print("Invalid JSON received")
+            return 'error'
+    else:
+        print("Empty response received")
+        return 'error'
+```
 
 ## 成功示例：
 **ps：抢课成功的实例也类似，基本上只要有人退课你就能抢到**

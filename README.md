@@ -42,6 +42,10 @@ pip install flask
 
 (也可在腾讯云函数搭建)
 
+## 打包好的api.exe
+https://drive.google.com/file/d/1IsszQXBuvdYbpmnyibLAGw92p8SdW54T/view?usp=sharing
+在windows x86环境下打包。直接运行后调用http://127.0.0.1:5000/base64img即可
+
 **如果本项目有帮到你，可以点击右上角的star支持一下 :)**
 
 ### 云函数搭建方法

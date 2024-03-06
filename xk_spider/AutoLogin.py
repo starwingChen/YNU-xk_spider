@@ -7,6 +7,7 @@ import time
 import requests
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
@@ -16,7 +17,15 @@ from urllib.parse import urlparse, parse_qs
 class AutoLogin:
     def __init__(self, url, path, name='', pswd=''):  # 增加自动登录中过验证码功能
         self.timer = None
-        self.driver = webdriver.Chrome(executable_path=path)
+        # 设置 Chrome 为无界面模式
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")  # 启用无界面模式
+        chrome_options.add_argument('--disable-gpu')  # 禁用 GPU 加速，某些系统/版本下需要
+        chrome_options.add_argument('--window-size=1920x1080')  # 指定浏览器分辨率
+
+        # 初始化 WebDriver，使用指定的 Chrome 驱动路径和 Chrome 选项
+        self.driver = webdriver.Chrome(executable_path=path, options=chrome_options)
+        # self.driver = webdriver.Chrome(executable_path=path)
         self.name = name
         self.url = url
         self.pswd = pswd
@@ -109,15 +118,6 @@ class AutoLogin:
                 self.close_driver()
                 return False
         # 点击选课按钮
-        WebDriverWait(self.driver, 15).until(EC.presence_of_element_located((By.XPATH, '//button[@class="bh-btn '
-                                                                                       'bh-btn bh-btn-primary '
-                                                                                       'bh-pull-right"]')))
-        ok_ele = self.driver.find_element(By.XPATH, '//button[@class="bh-btn bh-btn bh-btn-primary bh-pull-right"]')
-        ok_ele.click()
-        time.sleep(1)
-        start_ele = self.driver.find_element(By.XPATH, '//button[@id="courseBtn"]')
-        start_ele.click()
-
         try:
             WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.XPATH, '//button[@class="bh-btn '
                                                                                           'cv-btn bh-btn-primary '
@@ -129,6 +129,15 @@ class AutoLogin:
         except TimeoutException:
             # 如果按钮没有出现，可以选择忽略，继续运行其他代码
             pass
+        WebDriverWait(self.driver, 15).until(EC.presence_of_element_located((By.XPATH, '//button[@class="bh-btn '
+                                                                                       'bh-btn bh-btn-primary '
+                                                                                       'bh-pull-right"]')))
+        ok_ele = self.driver.find_element(By.XPATH, '//button[@class="bh-btn bh-btn bh-btn-primary bh-pull-right"]')
+        ok_ele.click()
+        time.sleep(1)
+        start_ele = self.driver.find_element(By.XPATH, '//button[@id="courseBtn"]')
+        start_ele.click()
+
         if WebDriverWait(self.driver, 8).until(EC.presence_of_element_located((By.ID, 'aPublicCourse'))):
             time.sleep(2)  # waiting for loading
             cookie_lis = self.driver.get_cookies()

@@ -135,8 +135,14 @@ class AutoLogin:
         ok_ele = self.driver.find_element(By.XPATH, '//button[@class="bh-btn bh-btn bh-btn-primary bh-pull-right"]')
         ok_ele.click()
         time.sleep(1)
-        start_ele = self.driver.find_element(By.XPATH, '//button[@id="courseBtn"]')
-        start_ele.click()
+        try:
+            start_ele = WebDriverWait(self.driver, 20).until(
+                EC.presence_of_element_located((By.XPATH, '//button[@id="courseBtn"]'))
+            )
+            self.driver.execute_script("arguments[0].click();", start_ele)
+        except TimeoutException:
+            print("在尝试点击时发生超时。")
+            return False
 
         if WebDriverWait(self.driver, 8).until(EC.presence_of_element_located((By.ID, 'aPublicCourse'))):
             time.sleep(2)  # waiting for loading

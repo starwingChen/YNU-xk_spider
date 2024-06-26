@@ -7,9 +7,10 @@
 * 解决api接口问题 2023-12-28多系统测试无异常
 * 2023-12-30 经测试24小时无异常
 * 2024-3-8 修复已知的所有bug，若仍然遇到问题请提交issue
+* 2024-6-26 修复完成
 ## 项目环境：
 * python版本：3.10
-* 第三方库：selenium 4.1.0；requests ; flask 3.0.0; ddddocr 1.4.10                                
+* 第三方库：selenium 4.1.0；requests ; flask 3.0.0; ddddocr 1.4.10; fake_useragent;                           
 * Chrome版本：最新版本 及其对应driver
 
 已经实现了余课提醒和自动抢课，余课提醒是通过server酱接口直接发送到你的微信上，为此你需要先从他们官网上获得一个key（[点击访问server酱官网，获取到key即可](http://sc.ftqq.com/3.version)），并且**关注"方糖"服务号**。具体操作官网都有写，我就不赘述了。

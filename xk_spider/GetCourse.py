@@ -53,33 +53,47 @@ class GetCourse:
                     print(f'[warning]: jugde()函数正尝试再次爬取')
                     time.sleep(3)
                     r = requests.post(url, data=query, headers=self.headers)
+                    try:
+                        setcookie = r.cookies
+                    except KeyError:
+                        setcookie = ''
 
-                try:
-                    # setcookie = r.headers['set-cookie']
-                    setcookie = r.cookies
-                except KeyError:
-                    setcookie = ''
-                if setcookie:
-                    # 将 RequestsCookieJar 对象转换为字典
-                    cookies_dict = dict_from_cookiejar(setcookie)
-                    # 将字典转换为字符串
-                    setcookie_str = '; '.join([f'{k}={v}' for k, v in cookies_dict.items()])
-                    # 在字符串中搜索
-                    match = re.search(r'_WEU=.+?; ', setcookie_str)
-                    if match is not None:
-                        update = match.group(0)
-                        self.headers['cookie'] = re.sub(r'_WEU=.+?; ', update, self.headers['cookie'])
+                    if setcookie:
+                        # 将 RequestsCookieJar 对象转换为字典
+                        cookies_dict = dict_from_cookiejar(setcookie)
+                        # 将字典转换为字符串
+                        setcookie_str = '; '.join([f'{k}={v}' for k, v in cookies_dict.items()])
+
+                        # 在字符串中搜索_WEU Cookie
+                        match_weu = re.search(r'_WEU=.+?; ', setcookie_str)
+                        if match_weu:
+                            update_weu = match_weu.group(0)
+                            self.headers['cookie'] = re.sub(r'_WEU=.+?; ', update_weu, self.headers.get('cookie', ''))
+                        else:
+                            print("No _WEU match found")
+
+                        # 在字符串中搜索其他Cookie并进行更新
+                        match_jsessionid = re.search(r'JSESSIONID=.+?; ', setcookie_str)
+                        if match_jsessionid:
+                            update_jsessionid = match_jsessionid.group(0)
+                            self.headers['cookie'] = re.sub(r'JSESSIONID=.+?; ', update_jsessionid,
+                                                            self.headers.get('cookie', ''))
+
+                        match_pgv_pvi = re.search(r'pgv_pvi=.+?; ', setcookie_str)
+                        if match_pgv_pvi:
+                            update_pgv_pvi = match_pgv_pvi.group(0)
+                            self.headers['cookie'] = re.sub(r'pgv_pvi=.+?; ', update_pgv_pvi,
+                                                            self.headers.get('cookie', ''))
+
+                        print(f'[current cookie]: {self.headers["cookie"]}')
                     else:
-                        print("No match found")
-
-                    print(f'[current cookie]: {self.headers["cookie"]}')
+                        print("No setcookie found")
 
                 temp = r.text.replace('null', 'None').replace('false', 'False').replace('true', 'True')
                 res = ast.literal_eval(temp)
 
                 if res['msg'] == '未查询到登录信息':
                     print('登录失效，请重新登录')
-                    # to_wechat(key, '登录失效，请重新登录', '线程结束')
                     return False
 
                 if kind == 'publicCourse.do':
@@ -112,7 +126,6 @@ class GetCourse:
 
             except HTTPError or SyntaxError:
                 print('登录失效，请重新登录')
-                # to_wechat(key, '登录失效，请重新登录', '线程结束')
                 return False
 
     def post_add(self, classname, teacher, classtype, classid, key):
@@ -176,14 +189,3 @@ class GetCourse:
         }
 
         return query
-
-
-if __name__ == '__main__':
-    Headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                      'Chrome/114.0.3987.116 Safari/537.36',
-        'cookie': '',
-        'token': ''
-    }
-    stdCode = ''
-    batchCode = ''

@@ -1,11 +1,14 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+from fake_useragent import UserAgent
+
 from xk_spider.AutoLogin import AutoLogin
 from xk_spider.GetCourse import GetCourse
 
 # 程序全自动运行，如果出现bug请提issue
+ua = UserAgent()
 headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                  'Chrome/114.0.3987.116 Safari/537.36'
+    'User-Agent': ua.random
 }
 url = 'http://xk.ynu.edu.cn/'
 stdCode = ''  # 在''中填入你的学号
@@ -22,8 +25,7 @@ publicCourses = [
 
 # 下面这个列表填你想查询的 主修课，包括必修和选修，格式填写同上
 programCourse = [
-    ['启发式与元启发式算法', '江华'],
-    ['新技术专题（2）', '王普明'],
+    # ['启发式与元启发式算法', '江华'],
 ]
 
 '''以上两个列表理论上可以接受任意数量的课程，填写模板如下。但数量最好不要超过你CPU的核心数（一般电脑都在4核以上）
@@ -33,7 +35,6 @@ programCourse = [
     ['课程3', '老师3'], 
 ]
 '''
-
 
 while True:
     try:

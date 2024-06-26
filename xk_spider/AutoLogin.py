@@ -3,6 +3,7 @@ import base64
 import json
 import threading
 import time
+from urllib.parse import urlparse, parse_qs
 
 import requests
 from selenium import webdriver
@@ -11,7 +12,6 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-from urllib.parse import urlparse, parse_qs
 
 
 class AutoLogin:
@@ -180,7 +180,6 @@ class AutoLogin:
 
 
 # 识别验证码(自己在本地部署或者嫖别人的)
-
 def imgcode_online(imgurl):
     if not hasattr(imgcode_online, "counter"):
         imgcode_online.counter = 0
@@ -211,26 +210,18 @@ def imgcode_online(imgurl):
                 return imgcode_online(imgurl)
             else:
                 print(result['msg'])
-                return 'error'
+                return False
         except json.JSONDecodeError:
             print("Invalid JSON received")
-            return 'error'
+            return False
     else:
         print("Empty response received")
-        return 'error'
+        return False
 
 
 def img_to_base64(img_url):
     response = requests.get(img_url)
+    if response is None:
+        return False
     img_data = base64.b64encode(response.content).decode('utf-8')
     return 'data:image/jpeg;base64,' + img_data
-
-
-if __name__ == '__main__':
-    Url = 'http://xk.ynu.edu.cn/xsxkapp/sys/xsxkapp/*default/index.do'
-    Name = ''
-    Pswd = ''
-    Headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                      'Chrome/114.0.3987.116 Safari/537.36'
-    }

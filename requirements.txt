@@ -1,5 +1,5 @@
 selenium == 4.1.0
 requests
 flask == 3.0.0
-ddddocr == 1.4.10
+ddddocr == 1.5.5
 fake_useragent

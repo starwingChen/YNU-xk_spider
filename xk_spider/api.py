@@ -20,7 +20,7 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'JPG', 'PNG', 'gif', 'GIF', 'jfif', 'jpeg'}
 
 # ocr验证码识别初始化
 ocr = ddddocr.DdddOcr()
-
+ocr.set_ranges(6)
 
 # 获取文件后缀
 def allowed_file(filename):

@@ -19,6 +19,7 @@ class AutoLogin:
         self.timer = None
         # 设置 Chrome 为无界面模式
         chrome_options = Options()
+        chrome_options.add_argument('--ignore-certificate-errors')
         chrome_options.add_argument("--headless")  # 启用无界面模式
         chrome_options.add_argument('--disable-gpu')  # 禁用 GPU 加速，某些系统/版本下需要
         chrome_options.add_argument('--window-size=1920x1080')  # 指定浏览器分辨率

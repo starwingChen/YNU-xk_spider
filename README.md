@@ -10,6 +10,7 @@
 * 2023-12-30 经测试24小时无异常
 * 2024-3-8 修复已知的所有bug，若仍然遇到问题请提交issue
 * 2024-6-26 修复完成
+* 2024-12-25 修复体育课问题及东陆校区问题（注意！！！东陆校区需要修改[GetCourse.py](xk_spider/GetCourse.py)表单中的campus为01）
 ## 项目环境：
 * python版本：3.10
 * 第三方库：selenium 4.1.0；requests ; flask 3.0.0; ddddocr 1.4.10; fake_useragent;                           

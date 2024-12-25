@@ -9,7 +9,7 @@ from requests.utils import dict_from_cookiejar
 
 
 def to_wechat(key, title, string):
-    url = 'https://sctapi.ftqq.com/' + key + '.send'
+    url = 'https://sc.ftqq.com/' + key + '.send'
     dic = {
         'text': title,
         'desp': string
@@ -30,7 +30,7 @@ class GetCourse:
         self.stdCode = stdCode
         self.pswd = pswd
 
-    def judge(self, course_name, teacher, key='', kind='素选'):
+    def judge(self, course_name, teacher, key='', kind=''):
         # 人数未满才返回classid
         classtype = "XGXK"
         if kind == '素选':
@@ -38,6 +38,9 @@ class GetCourse:
         elif kind == '主修':
             kind = 'programCourse.do'
             classtype = "FANKC"
+        elif kind == '体育':
+            kind = 'programCourse.do'
+            classtype = "TYKC"
         url = 'http://xk.ynu.edu.cn/xsxkapp/sys/xsxkapp/elective/' + kind
 
         while True:
@@ -158,7 +161,7 @@ class GetCourse:
                 "electiveBatchCode": self.batchcode,
                 "teachingClassId": classid,
                 "isMajor": "1",
-                "campus": "05",
+                "campus": "05",  # 01是东陆的校区代码
                 "teachingClassType": classtype
             }
         }
@@ -172,7 +175,7 @@ class GetCourse:
         data = {
             "data": {
                 "studentCode": self.stdcode,
-                "campus": "05",
+                "campus": "05",  # 01是东陆的校区代码
                 "electiveBatchCode": self.batchcode,
                 "isMajor": "1",
                 "teachingClassType": classtype,

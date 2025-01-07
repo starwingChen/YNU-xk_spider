@@ -9,7 +9,7 @@ from requests.utils import dict_from_cookiejar
 
 
 def to_wechat(key, title, string):
-    url = 'https://sc.ftqq.com/' + key + '.send'
+    url = 'https://sctapi.ftqq.com/' + key + '.send'
     dic = {
         'text': title,
         'desp': string

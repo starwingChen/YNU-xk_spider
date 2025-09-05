@@ -1,7 +1,7 @@
 # YNU-xk_spider
 云南大学选课爬虫，提供余课提醒服务，实现了自动抢课
 
-[重构版](https://github.com/davidwushi1145/YNU-xk_spider_Refactoring)
+[重构版](https://github.com/davidwushi1145/YNU-xk_spider_Refactoring)，若存在bug请到此版本提出issue
 
 * 来源于https://github.com/starwingChen/YNU-xk_spider
 * 更进一步解决自动注销问题 2023-6-23测试三小时无注销

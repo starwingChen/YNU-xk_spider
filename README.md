@@ -1,79 +1,138 @@
 # YNU-xk_spider
-云南大学选课爬虫，提供余课提醒服务，实现了自动抢课
 
-[重构版](https://github.com/davidwushi1145/YNU-xk_spider_Refactoring)，若存在bug请到此版本提出issue
+> [!CAUTION]
+> **Disclaimer / 声明**
+>
+> This program is for technical exchange ONLY. Commercial use or charging fees is strictly prohibited. We reserve the right to discontinue all future maintenance if any unauthorized commercial activity is detected.
+>
+> 本程序仅供技术交流。严禁任何形式的收费行为。若再次发现违规收费，我们将停止后续一切维护。
 
-* 来源于https://github.com/starwingChen/YNU-xk_spider
-* 更进一步解决自动注销问题 2023-6-23测试三小时无注销
-* 请自行搭建验证码识别api或自行寻找
-* 解决api接口问题 2023-12-28多系统测试无异常
-* 2023-12-30 经测试24小时无异常
-* 2024-3-8 修复已知的所有bug，若仍然遇到问题请提交issue
-* 2024-6-26 修复完成
-* 2024-12-25 修复体育课问题及东陆校区问题（注意！！！东陆校区需要修改[GetCourse.py](xk_spider/GetCourse.py)表单中的campus为01）
-## 项目环境：
-* python版本：3.10
-* 第三方库：selenium 4.1.0；requests ; flask 3.0.0; ddddocr 1.4.10; fake_useragent;                           
-* Chrome版本：最新版本 及其对应driver
+云南大学选课爬虫，提供余课提醒服务，实现自动抢课功能。
 
-已经实现了余课提醒和自动抢课，余课提醒是通过server酱接口直接发送到你的微信上，为此你需要先从他们官网上获得一个key（[点击访问server酱官网，获取到key即可](https://sct.ftqq.com/)），并且**关注"方糖"服务号**。具体操作官网都有写，我就不赘述了。
+> [重构版](https://github.com/davidwushi1145/YNU-xk_spider_Refactoring) - 若存在 bug 请到此版本提出 issue
 
-另外程序主要提供主修（包括必修和专选）、素选课程及体育课的提醒和抢课，**跨专业选修没测试过**，如果遇到问题可以在issue里提出来  
+## 更新日志
 
+| 日期 | 更新内容 |
+|------|----------|
+| 2026-01-14 | 线程安全重构：添加锁保护共享资源；优雅停止机制（stop() + _running）；移除死代码；Selenium 4.x Service 类适配；ThreadPoolExecutor 正确关闭；API 输入验证增强 |
+| 2024-12-25 | 修复体育课问题及东陆校区问题 |
+| 2024-06-26 | 修复完成 |
+| 2024-03-08 | 修复已知的所有 bug |
+| 2023-12-30 | 经测试 24 小时无异常 |
+| 2023-12-28 | 解决 API 接口问题，多系统测试无异常 |
+| 2023-06-23 | 解决自动注销问题，测试 3 小时无注销 |
 
-## 如何使用:
-1. **安装好运行环境，下载此程序并解压。**
-2. **切换到YNU-xk_spider-master目录**
-3. **运行```pip install -r requirements.txt```**
-4. **运行api.py文件**(!!!!本地识别一定要先运行这个)
-5. **打开run.py文件。** 
-6. **按照文件注释中的提示填写好字段，运行程序。**
-    需要填的字段都已经用注释的形式标明了，填完直接运行即可。这之后程序会开始循环执行，同时打开一个窗口，登录进去等窗口自己关闭后就可以不用管了  
+## 功能特性
 
-我已经尽量把代码封装成小白能使用的程度了，不需要有太多前端和python基础，安装完运行环境，照着注释将字段填好就完事了。程序已经做了初步的异常检测，如果您在运行时有什么问题，也可以在issue里提出来
+- 自动登录选课系统（含验证码识别）
+- 课程余量实时监控
+- 余课微信提醒（通过 Server酱）
+- 自动抢课（检测到空位立即选课）
+- 支持课程类型：素选课、主修课（必修/专选）、体育课
 
-另外，因为程序使用到了selenium模块，因此必须要下载Chrome浏览器驱动。具体教程[参考教程见此，另外不需要添加环境变量，记住你的下载路径就行](https://blog.csdn.net/mingfeng4923/article/details/130989513)，如果您的电脑未安装Chrome浏览器，这边建议您安装一个，而且没有Chrome此程序无法运行。chreomeDriver下载地址:https://googlechromelabs.github.io/chrome-for-testing/
+## 环境要求
 
-## 自行搭建api方法
+| 依赖 | 版本要求 |
+|------|----------|
+| Python | 3.10+ |
+| Chrome 浏览器 | 最新版本 |
+| ChromeDriver | 与 Chrome 版本匹配 |
 
-打开api.py
-
-```python
-pip install ddddocr
-pip install flask
+**Python 依赖库**：
+```
+selenium==4.1.0
+requests
+flask==3.0.0
+ddddocr==1.5.5
+fake_useragent
 ```
 
-然后直接运行api.py
+## 快速开始
 
-(也可在腾讯云函数搭建)
+### 1. 安装依赖
 
-## 打包好的api.exe
-https://drive.google.com/file/d/1IsszQXBuvdYbpmnyibLAGw92p8SdW54T/view?usp=sharing
-在windows x86环境下打包。直接运行后调用http://127.0.0.1:5000/base64img即可
+```bash
+cd YNU-xk_spider
+pip install -r requirements.txt
+```
 
-**如果本项目有帮到你，可以点击右上角的star支持一下 :)**
+### 2. 下载 ChromeDriver
 
-### 云函数搭建方法
+下载与你的 Chrome 版本匹配的 ChromeDriver：https://googlechromelabs.github.io/chrome-for-testing/
 
-```shell
+### 3. 启动验证码识别服务
+
+```bash
+python xk_spider/api.py
+```
+
+### 4. 配置并运行
+
+编辑 `xk_spider/run.py`，填写以下字段：
+
+```python
+stdCode = '你的学号'
+pswd = '你的密码'
+key = '你的Server酱Key'  # 可选，用于微信通知
+path = '/path/to/chromedriver'  # ChromeDriver 路径
+
+# 要抢的素选课
+publicCourses = [
+    ['课程名称', '授课老师'],
+]
+
+# 要抢的体育课
+peCourses = [
+    # ['羽毛球（四）', '范丽霞'],
+]
+
+# 要抢的主修课
+programCourse = [
+    # ['大学生创新创业教育', '段连丽'],
+]
+```
+
+运行程序：
+
+```bash
+python xk_spider/run.py
+```
+
+## 校区配置
+
+如需选择**东陆校区**的课程，需修改 `xk_spider/GetCourse.py` 中的 `campus` 参数：
+
+| 校区 | campus 值 |
+|------|-----------|
+| 呈贡校区（默认） | `"05"` |
+| 东陆校区 | `"01"` |
+
+## 验证码识别服务
+
+### 本地部署（推荐）
+
+```bash
+pip install ddddocr flask
+python xk_spider/api.py
+```
+
+服务地址：`http://127.0.0.1:5000/base64img`
+
+### Windows 打包版
+
+[下载 api.exe](https://drive.google.com/file/d/1IsszQXBuvdYbpmnyibLAGw92p8SdW54T/view?usp=sharing)（Windows x86 环境）
+
+### 云函数部署
+
+```bash
 docker pull ccr.ccs.tencentyun.com/ocrr/ocr:2.0.0
 ```
 
-打完tag后上传到你自己的仓库然后使用云函数docker部署
+使用云函数需修改 `AutoLogin.py` 中的 `imgcode_online` 函数，将请求地址改为云函数 URL。
 
-![image-20240103114026538](https://raw.githubusercontent.com/davidwushi1145/photo2/main/image-20240103114026538.png)
-
-高级配置拉满
-
-![image-20240103114116110](https://raw.githubusercontent.com/davidwushi1145/photo2/main/image-20240103114116110.png)
-
-然后测试即可
-
-![image-20240103114217426](https://raw.githubusercontent.com/davidwushi1145/photo2/main/image-20240103114217426.png)
-
-### 注意
-
-使用云函数需要修改AutoLogin.py中的imgcode_online函数
+<details>
+<summary>点击查看云函数版代码</summary>
 
 ```python
 def imgcode_online(imgurl):
@@ -93,10 +152,9 @@ def imgcode_online(imgurl):
         imgcode_online.timestamp = current_time
         return False
 
-    # Convert base64 image to bytes
     img_data = base64.b64decode(imgurl.split(",")[-1])
     files = {'image': ('image.jpg', img_data)}
-    response = requests.post('云函数给你的访问路径url/ocr/file/json', files=files)
+    response = requests.post('云函数URL/ocr/file/json', files=files)
 
     if response.text:
         try:
@@ -118,20 +176,33 @@ def imgcode_online(imgurl):
         return 'error'
 ```
 
-## 成功示例：
-**ps：抢课成功的实例也类似，基本上只要有人退课你就能抢到**
+</details>
 
-<img src="./resource/res1.png" height="300"><img src="./resource/res2.jpg" height="300">
-<img src="./resource/res3.jpg" height="300"><img src="./resource/1.png" height="300">
+## 成功示例
 
-2023-6-23注销测试
+<img src="./resource/res1.png" height="250"> <img src="./resource/res2.jpg" height="250">
+<img src="./resource/res3.jpg" height="250"> <img src="./resource/1.png" height="250">
 
-<img src="./resource/2.png" height="300" alt="">
+## 常见问题
 
-2023-12-28修复成功
+**Q: 出现 401 错误怎么办？**
+A: 这是 session 过期，程序会自动重新登录。
 
-<img src="./resource/4.png" height="300" alt="">
+**Q: ChromeDriver 崩溃怎么办？**
+A: 程序已有异常处理，会自动重试。确保 Chrome 和 ChromeDriver 版本匹配。
 
-## 郑重声明:
+**Q: 跨专业选修课支持吗？**
+A: 未经测试，如有问题请提 issue。
 
-### 此程序仅作为技术交流之用，请不要将其用于任何形式的收费行为中  
+## 致谢
+
+- 原项目：https://github.com/starwingChen/YNU-xk_spider
+- Server酱：https://sct.ftqq.com/
+
+## 声明
+
+**此程序仅作为技术交流之用，请勿将其用于任何形式的收费行为。**
+
+---
+
+如果本项目对你有帮助，欢迎点击右上角的 Star 支持一下 :)

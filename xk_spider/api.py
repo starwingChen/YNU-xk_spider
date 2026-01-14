@@ -14,9 +14,10 @@ sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
 
 app = Flask(__name__)
 app.config.update(DEBUG=False)
+app.config['MAX_CONTENT_LENGTH'] = 1 * 1024 * 1024  # 1MB
 UPLOAD_FOLDER = 'upload'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'JPG', 'PNG', 'gif', 'GIF', 'jfif', 'jpeg'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'gif', 'jfif', 'jpeg'}
 
 # ocr验证码识别初始化
 ocr = ddddocr.DdddOcr()
@@ -24,7 +25,7 @@ ocr.set_ranges(6)
 
 # 获取文件后缀
 def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 # 判断是否为base64
@@ -32,7 +33,7 @@ def isBase64Img(str_img):
     try:
         base64_img = str_img.split(',')[1]
         return base64.b64decode(base64_img)
-    except binascii.Error:
+    except (binascii.Error, ValueError, IndexError):
         return False
 
 
@@ -45,9 +46,13 @@ def index():
 @app.route('/base64img', methods=['GET', 'POST'])
 def base64img():
     if request.method == 'GET':
-        src = request.args['data']
+        src = request.args.get('data', '')
     else:
-        src = request.form['data']
+        src = request.form.get('data', '')
+    if not src:
+        return jsonify({'code': -301, 'msg': '缺少data参数'})
+    if not src.startswith('data:image/'):
+        return jsonify({'code': -302, 'msg': '非法的 data URI，请提供图片 base64'})
     if isBase64Img(src):
         data = src.split(',')[1]
         image_data = base64.b64decode(data)
@@ -89,4 +94,4 @@ def page_not_found(e):
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000)
+    app.run(host='127.0.0.1', port=5000, use_reloader=False)

@@ -16,7 +16,7 @@ ua = UserAgent()
 headers = {
     'User-Agent': ua.random
 }
-url = 'http://xk.ynu.edu.cn/'
+url = 'https://xk.ynu.edu.cn/'
 stdCode = ''  # 在''中填入你的学号
 pswd = ''  # 填你的密码
 key = ''  # 填你在server酱上获取到的key

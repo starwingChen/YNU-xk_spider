@@ -167,7 +167,7 @@ class GetCourse:
                 "electiveBatchCode": self.batchcode,
                 "teachingClassId": classid,
                 "isMajor": "1",
-                "campus": "05",  # 01是东陆的校区代码
+                "campus": "02",  # 01是东陆的校区代码
                 "teachingClassType": classtype
             }
         }
@@ -181,7 +181,7 @@ class GetCourse:
         data = {
             "data": {
                 "studentCode": self.stdcode,
-                "campus": "05",  # 01是东陆的校区代码
+                "campus": "02",  # 01是东陆的校区代码
                 "electiveBatchCode": self.batchcode,
                 "isMajor": "1",
                 "teachingClassType": classtype,

@@ -9,7 +9,7 @@
 
 云南大学选课爬虫，提供余课提醒服务，实现自动抢课功能。
 
-> [重构版](https://github.com/davidwushi1145/YNU-xk_spider_Refactoring) - 若存在 bug 请到此版本提出 issue
+> [重构版](https://github.com/davidwushi1145/YNU-xk_spider_Refactoring) - 若存在 bug 请到此版本提出 issue，建议使用此版本。
 
 ## 更新日志
 
@@ -104,9 +104,9 @@ python xk_spider/run.py
 如需选择**东陆校区**的课程，需修改 `xk_spider/GetCourse.py` 中的 `campus` 参数：
 
 | 校区 | campus 值 |
-|------|-----------|
-| 呈贡校区（默认） | `"05"` |
-| 东陆校区 | `"01"` |
+|------|----------|
+| 呈贡校区（默认） | `"02"`   |
+| 东陆校区 | `"01"`   |
 
 ## 验证码识别服务
 

@@ -1,35 +1,66 @@
-import requests
-import ast
-import time
+import json
+import random
 import re
-from requests.exceptions import HTTPError
+import threading
+import time
+
+import requests
+from requests.exceptions import HTTPError, RequestException
+
+DEFAULT_TIMEOUT = 10
+from requests.utils import dict_from_cookiejar
+
 
 
 def to_wechat(key, title, string):
-    url = 'https://sc.ftqq.com/' + key + '.send'
+    if not key:
+        return title + '：未配置微信通知'
+    url = 'https://sctapi.ftqq.com/' + key + '.send'
     dic = {
         'text': title,
         'desp': string
     }
-    requests.get(url, params=dic)
-
+    try:
+        requests.get(url, params=dic, timeout=DEFAULT_TIMEOUT)
+    except RequestException as e:
+        print(f"微信通知发送失败: {e}")
+        return title + '：发送失败'
     return title + '：已发送至微信'
 
 
 class GetCourse:
-    def __init__(self, headers: dict, stdcode, batchcode):
+    def __init__(self, headers: dict, stdcode, batchcode, driver, url, path, stdCode, pswd):
+        self._cookie_lock = threading.Lock()
+        self._running = True
+        self.driver = driver
         self.headers = headers
         self.stdcode = stdcode
         self.batchcode = batchcode
+        self.url = url
+        self.path = path
+        self.stdCode = stdCode
+        self.pswd = pswd
 
-        # self.flag = 0
-        # self.cookies = {
-        #     '_WEU': '',
-        #     'JSESSIONID': '',
-        #     'route': ['', '', ''],
-        # }
+    def stop(self):
+        self._running = False
 
-    def judge(self, course_name, teacher, key='', kind='素选'):
+    def __build_request_headers(self):
+        with self._cookie_lock:
+            headers = self.headers.copy()
+        headers['Referer'] = 'https://xk.ynu.edu.cn/xsxkapp/sys/xsxkapp/*default/index.do'
+        headers['Origin'] = 'https://xk.ynu.edu.cn'
+        headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8'
+        headers['Accept'] = 'application/json, text/javascript, */*; q=0.01'
+        headers['X-Requested-With'] = 'XMLHttpRequest'
+        return headers
+
+    def __build_url(self, endpoint):
+        separator = '&' if '?' in endpoint else '?'
+        with self._cookie_lock:
+            token = self.headers.get('Token', '')
+        return f"{endpoint}{separator}token={token}"
+
+    def judge(self, course_name, teacher, key='', kind=''):
         # 人数未满才返回classid
         classtype = "XGXK"
         if kind == '素选':
@@ -37,46 +68,56 @@ class GetCourse:
         elif kind == '主修':
             kind = 'programCourse.do'
             classtype = "FANKC"
-        url = 'http://xk.ynu.edu.cn/xsxkapp/sys/xsxkapp/elective/' + kind
+        elif kind == '体育':
+            kind = 'programCourse.do'
+            classtype = "TYKC"
+        url = 'https://xk.ynu.edu.cn/xsxkapp/sys/xsxkapp/elective/' + kind
 
-        while True:
+        while self._running:
             try:
                 query = self.__judge_datastruct(course_name, classtype)
-                r = requests.post(url, data=query, headers=self.headers)
-                r.raise_for_status()
-                flag = 0
-                while not r:
-                    if flag > 2:
-                        to_wechat(key, f'{course_name} 查询失败，请检查失败原因', '线程结束')
-                        return False
-                    print(f'[warning]: jugde()函数正尝试再次爬取')
-                    time.sleep(3)
-                    r = requests.post(url, data=query, headers=self.headers)
+                request_headers = self.__build_request_headers()
+                request_url = self.__build_url(url)
+                r = requests.post(request_url, data=query, headers=request_headers, timeout=DEFAULT_TIMEOUT)
+                try:
+                    r.raise_for_status()
+                except HTTPError:
+                    print(f"[ERROR] API returned {r.status_code}: {r.text[:200]}")
+                    raise
+
+                # 更新 session cookies
+                setcookie = r.cookies
+                if setcookie:
+                    cookies_dict = dict_from_cookiejar(setcookie)
+                    setcookie_str = '; '.join([f'{k}={v}' for k, v in cookies_dict.items()])
+                    with self._cookie_lock:
+                        match_weu = re.search(r'_WEU=.+?; ', setcookie_str)
+                        if match_weu:
+                            self.headers['cookie'] = re.sub(r'_WEU=.+?; ', match_weu.group(0), self.headers.get('cookie', ''))
+                        match_jsessionid = re.search(r'JSESSIONID=.+?; ', setcookie_str)
+                        if match_jsessionid:
+                            self.headers['cookie'] = re.sub(r'JSESSIONID=.+?; ', match_jsessionid.group(0), self.headers.get('cookie', ''))
+                        match_pgv_pvi = re.search(r'pgv_pvi=.+?; ', setcookie_str)
+                        if match_pgv_pvi:
+                            self.headers['cookie'] = re.sub(r'pgv_pvi=.+?; ', match_pgv_pvi.group(0), self.headers.get('cookie', ''))
 
                 try:
-                    setcookie = r.headers['set-cookie']
-                except KeyError:
-                    setcookie = ''
-                if setcookie:
-                    print(f'[set-cookie]: {setcookie}')
-                    update = re.search(r'_WEU=.+?; ', setcookie).group(0)
-                    self.headers['cookie'] = re.sub(r'_WEU=.+?; ', update, self.headers['cookie'])
-
-                    print(f'[current cookie]: {self.headers["cookie"]}')
-
-                temp = r.text.replace('null', 'None').replace('false', 'False').replace('true', 'True')
-                res = ast.literal_eval(temp)
-                if kind == 'publicCourse.do':
-                    datalist = res['dataList']
-                elif kind == 'programCourse.do':
-                    datalist = res['dataList'][0]['tcList']
-                else:
-                    print('kind参数错误，请重新输入')
+                    res = json.loads(r.text)
+                except json.JSONDecodeError:
+                    print(f"[ERROR] 无效的 JSON 响应: {r.text[:200]}")
                     return False
 
-                if res['msg'] == '未查询到登录信息':
+                if res.get('msg') == '未查询到登录信息':
                     print('登录失效，请重新登录')
-                    to_wechat(key, '登录失效，请重新登录', '线程结束')
+                    return False
+
+                if kind == 'publicCourse.do':
+                    datalist = res.get('dataList', [])
+                elif kind == 'programCourse.do':
+                    data_list = res.get('dataList', [])
+                    datalist = data_list[0].get('tcList', []) if data_list else []
+                else:
+                    print('kind参数错误，请重新输入')
                     return False
 
                 for course in datalist:
@@ -86,35 +127,35 @@ class GetCourse:
                         print(string)
                         to_wechat(key, f'{course_name} 余课提醒', string)
                         res = self.post_add(course_name, teacher, classtype, course['teachingClassID'], key)
+                        # 若同一个老师开设多门同样课程，持续抢课
+                        if '该课程与已选课程时间冲突' in res:
+                            continue
+                        if '人数已满' in res:
+                            continue
+                        if '添加选课志愿成功' in res:
+                            return res
                         return res
 
                 print(f'{course_name} {teacher}：人数已满 {time.ctime()}')
-                time.sleep(15)
+                sleep_time = random.randint(300, 1000)
+                time.sleep(sleep_time)
 
-            except HTTPError or SyntaxError:
+            except (HTTPError, SyntaxError, RequestException):
                 print('登录失效，请重新登录')
-                to_wechat(key, '登录失效，请重新登录', '线程结束')
                 return False
 
     def post_add(self, classname, teacher, classtype, classid, key):
         query = self.__add_datastruct(classid, classtype)
+        request_headers = self.__build_request_headers()
+        url = self.__build_url('https://xk.ynu.edu.cn/xsxkapp/sys/xsxkapp/elective/volunteer.do')
+        r = requests.post(url, headers=request_headers, data=query, timeout=DEFAULT_TIMEOUT)
 
-        url = 'http://xk.ynu.edu.cn/xsxkapp/sys/xsxkapp/elective/volunteer.do'
-        r = requests.post(url, headers=self.headers, data=query)
-        flag = 0
-        while not r:
-            if flag > 2:
-                to_wechat(key, f'{classname} 有余课，但post未成功', '线程结束')
-                break
-            print(f'[warning]: post_add()函数正尝试再次请求')
-            time.sleep(3)
-            r = requests.post(url, headers=self.headers, data=query)
-            flag += 1
-
-        messge_str = r.text.replace('null', 'None').replace('false', 'False').replace('true', 'True')
-        messge = ast.literal_eval(messge_str)['msg']
+        try:
+            message = json.loads(r.text).get('msg', '未知结果')
+        except json.JSONDecodeError:
+            message = f'响应解析失败: {r.text[:100]}'
         title = '抢课结果'
-        string = '[' + teacher + ']' + classname + ': ' + messge
+        string = '[' + teacher + ']' + classname + ': ' + message
         to_wechat(key, title, string)
         return string
 
@@ -126,7 +167,7 @@ class GetCourse:
                 "electiveBatchCode": self.batchcode,
                 "teachingClassId": classid,
                 "isMajor": "1",
-                "campus": "05",
+                "campus": "02",  # 01是东陆的校区代码
                 "teachingClassType": classtype
             }
         }
@@ -140,7 +181,7 @@ class GetCourse:
         data = {
             "data": {
                 "studentCode": self.stdcode,
-                "campus": "05",
+                "campus": "02",  # 01是东陆的校区代码
                 "electiveBatchCode": self.batchcode,
                 "isMajor": "1",
                 "teachingClassType": classtype,
@@ -157,39 +198,3 @@ class GetCourse:
         }
 
         return query
-
-    # def update_cookie(self, string):
-    #     if '_WEU' in string:
-    #         self.cookies['_WEU'] = re.search(r'_WEU=(.+?)[,;]', string).group(1)
-    #     if 'JSESSIONID' in string:
-    #         self.cookies['JSESSIONID'] = re.search(r'JSESSIONID=(.+?)[,;]', string).group(1)
-    #     if 'route' in string:
-    #         routes = re.findall(r'route=(.+?)[,;]', string)
-    #         for route in routes:
-    #             self.cookies['route'][self.flag] = route
-    #             self.flag = (self.flag + 1) % 3
-    #
-    #     current = ''
-    #     for key, value in self.cookies.items():
-    #         if isinstance(value, list):
-    #             for s in value:
-    #                 current += key + '=' + s + '; '
-    #         else:
-    #             current += key + '=' + value + '; '
-    #
-    #     print(self.flag)
-    #     return current
-
-
-if __name__ == '__main__':
-    Headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                      'Chrome/80.0.3987.116 Safari/537.36',
-        'cookie': '',
-        'token': ''
-    }
-    stdCode = ''
-    batchCode = ''
-
-    test = GetCourse(Headers, stdCode, batchCode)
-    # print(test.judge('初级泰语', '李娟'))
